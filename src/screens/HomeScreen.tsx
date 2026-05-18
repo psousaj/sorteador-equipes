@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import {
-  Users, Shuffle, Volume2, VolumeX,
-  Crown, AlertTriangle, History,
+  Shuffle, Volume2, VolumeX,
+  AlertTriangle, History,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { DEFAULT_TAGS } from '../types';
