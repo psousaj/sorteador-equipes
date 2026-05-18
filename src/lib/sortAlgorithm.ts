@@ -64,6 +64,16 @@ function validateDraw(input: DrawInput): DrawValidation {
     }
   }
 
+  // Check blocked pairs
+  for (const person of people) {
+    for (const blockedId of person.blockedWith) {
+      const blockedPerson = people.find(p => p.id === blockedId);
+      if (!blockedPerson) {
+        errors.push(`Pessoa bloqueada não encontrada: "${person.name}" ↔ ?`);
+      }
+    }
+  }
+
   // Check captain rule
   if (config.enableCaptain && config.captainTag) {
     const peopleWithCaptainTag = people.filter(p => p.tags.includes(config.captainTag));
@@ -104,6 +114,10 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
 
   // Separate people by categories
   let everyone = [...people];
+  const blockedMap = new Map<string, Set<string>>();
+  for (const person of everyone) {
+    blockedMap.set(person.id, new Set(person.blockedWith));
+  }
 
   // 1. Handle captain tag — distribute tagged people first
   if (config.enableCaptain && config.captainTag) {
@@ -170,6 +184,31 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
 
   // 4. Handle max rules — check that no team exceeds max
   const maxRules = config.rules.filter(r => r.type === 'max');
+  for (const rule of maxRules) {
+    for (let i = 0; i < numTeams; i++) {
+      const count = teams[i].filter(p => p.tags.includes(rule.tag)).length;
+      if (count > rule.value) {
+        errors.push(`Time ${i + 1} tem ${count} "${rule.tag}", mas o máximo é ${rule.value}.`);
+      }
+    }
+  }
+
+  // 5. Handle blocked pairs — check no blocked pairs in same team
+  for (let i = 0; i < numTeams; i++) {
+    const team = teams[i];
+    for (const person of team) {
+      for (const blockedId of person.blockedWith) {
+        const blockedInSameTeam = team.find(p => p.id === blockedId);
+        if (blockedInSameTeam) {
+          errors.push(
+            `"${person.name}" e "${blockedInSameTeam.name}" não podem ficar no mesmo time (Time ${i + 1}).`
+          );
+        }
+      }
+    }
+  }
+
+  // 6. Distribute remaining people
   const remaining = shuffle(everyone);
 
   // Build a team queue — teams that have fewer members get first pick
@@ -204,6 +243,12 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
         }
       }
       if (violatesMax) continue;
+
+      // Check blocked pairs
+      const blockedInTeam = person.blockedWith.some(blockedId =>
+        team.some(p => p.id === blockedId)
+      );
+      if (blockedInTeam) continue;
 
       team.push(person);
       currentTeamIdx = teamIdx + 1;
@@ -267,8 +312,11 @@ export function runDraw(input: DrawInput): {
 
   const { teams, errors } = performDraw(input);
 
-  // Clean people for result
-  const cleanPeople = input.people.map(p => ({ ...p }));
+  // Clean blocked pairs from the result people (don't save that state)
+  const cleanPeople = input.people.map(p => ({
+    ...p,
+    blockedWith: [] as string[],
+  }));
 
   const result: DrawResult = {
     id: uuidv4(),

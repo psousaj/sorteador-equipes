@@ -28,6 +28,7 @@ export function HomeScreen() {
   const [customTags, setCustomTags] = useState<string[]>([]);
   const [captainTooltipOpen, setCaptainTooltipOpen] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [blockModePersonId, setBlockModePersonId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const captainTooltipRef = useRef<HTMLDivElement>(null);
 
@@ -99,6 +100,20 @@ export function HomeScreen() {
   const handleRemovePerson = (id: string, name: string) => {
     dispatch({ type: 'REMOVE_PERSON', payload: { id, name } });
     setSelectedPerson(null);
+  };
+
+  const handleToggleBlock = (personId: string) => {
+    if (blockModePersonId === null) {
+      setBlockModePersonId(personId);
+    } else if (blockModePersonId === personId) {
+      setBlockModePersonId(null);
+    } else {
+      dispatch({
+        type: 'TOGGLE_BLOCKED_PAIR',
+        payload: { personId1: blockModePersonId, personId2: personId },
+      });
+      setBlockModePersonId(null);
+    }
   };
 
   const handleAddRule = () => {
@@ -220,18 +235,35 @@ export function HomeScreen() {
                     <Users size={14} />
                     Pessoas ({people.length})
                   </h2>
-                  <button
-                    onClick={() => dispatch({ type: 'CLEAR_PEOPLE' })}
-                    className="text-xs flex items-center gap-1 text-red-400 hover:text-red-600 font-semibold transition-colors"
-                    title="Limpar lista de pessoas"
-                  >
-                    <Trash2 size={14} />
-                    Limpar
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {blockModePersonId !== null && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-red-500 font-medium animate-pulse">
+                          Clique em outra pessoa para bloquear o par 🚫
+                        </span>
+                        <button
+                          onClick={() => setBlockModePersonId(null)}
+                          className="text-xs text-gray-400 hover:text-gray-600"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => dispatch({ type: 'CLEAR_PEOPLE' })}
+                      className="text-xs flex items-center gap-1 text-red-400 hover:text-red-600 font-semibold transition-colors"
+                      title="Limpar lista de pessoas"
+                    >
+                      <Trash2 size={14} />
+                      Limpar
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                  {people.map((person, idx) => (
-                    <PersonChip
+                  {people.map((person, idx) => {
+                    const blockedBySomeone = people.some(p => p.blockedWith.includes(person.id));
+                    return (
+                      <PersonChip
                       key={person.id}
                       person={person}
                       index={idx}
@@ -239,11 +271,15 @@ export function HomeScreen() {
                       onToggleTag={handleToggleTag}
                       onRemove={(id) => handleRemovePerson(id, person.name)}
                       onClickName={setSelectedPerson}
+                      onToggleBlock={handleToggleBlock}
+                      isInBlockMode={blockModePersonId === person.id}
+                      blockedBySomeone={blockedBySomeone && blockModePersonId === null}
                       availableTags={personTags}
                       customTags={customTags}
                       onAddCustomTag={handleAddCustomTag}
                     />
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

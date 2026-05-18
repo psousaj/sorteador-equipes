@@ -11,6 +11,9 @@ interface PersonChipProps {
   onToggleTag: (id: string, tag: string) => void;
   onRemove: (id: string) => void;
   onClickName: (person: Person) => void;
+  onToggleBlock: (id: string) => void;
+  isInBlockMode: boolean;
+  blockedBySomeone: boolean;
   availableTags: string[];
   customTags: string[];
   onAddCustomTag: (id: string, tag: string) => void;
@@ -29,6 +32,9 @@ export function PersonChip({
   onToggleTag,
   onRemove,
   onClickName,
+  onToggleBlock,
+  isInBlockMode,
+  blockedBySomeone,
   availableTags,
   customTags,
   onAddCustomTag,
@@ -60,8 +66,14 @@ export function PersonChip({
     <div
       className={`
         relative group rounded-xl border-2 p-3 transition-all duration-200
-        ${genderBorder} bg-white hover:shadow-md hover:border-brand-light
+        ${isInBlockMode
+          ? 'border-red-400 bg-red-50 shadow-lg scale-105'
+          : blockedBySomeone
+            ? 'border-red-300 bg-red-50/50'
+            : `${genderBorder} bg-white hover:shadow-md hover:border-brand-light`
+        }
       `}
+      onClick={() => isInBlockMode && onToggleBlock(person.id)}
     >
       {/* Header: Name + Gender + Remove */}
       <div className="flex items-center gap-2 mb-2">
@@ -177,6 +189,13 @@ export function PersonChip({
           onClick={(e) => e.stopPropagation()}
         />
       </div>
+
+      {/* Block indicator */}
+      {person.blockedWith.length > 0 && (
+        <div className="mt-1.5 text-xs text-red-500 font-medium">
+          🚫 {person.blockedWith.length} bloqueio(s)
+        </div>
+      )}
     </div>
   );
 }

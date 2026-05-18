@@ -49,6 +49,7 @@ type Action =
   | { type: 'REMOVE_RULE'; payload: string }
   | { type: 'SET_CAPTAIN_TAG'; payload: string }
   | { type: 'TOGGLE_CAPTAIN'; payload: boolean }
+  | { type: 'TOGGLE_BLOCKED_PAIR'; payload: { personId1: string; personId2: string } }
   | { type: 'TOGGLE_SOUND'; payload: boolean }
   | { type: 'SET_RESULT'; payload: DrawResult | null }
   | { type: 'SET_ANIMATION_DONE'; payload: boolean }
@@ -90,6 +91,32 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'TOGGLE_CAPTAIN':
       return { ...state, enableCaptain: action.payload };
+
+    case 'TOGGLE_BLOCKED_PAIR': {
+      const { personId1, personId2 } = action.payload;
+      const people = state.people.map(p => {
+        if (p.id === personId1) {
+          const hasBlock = p.blockedWith.includes(personId2);
+          return {
+            ...p,
+            blockedWith: hasBlock
+              ? p.blockedWith.filter(id => id !== personId2)
+              : [...p.blockedWith, personId2],
+          };
+        }
+        if (p.id === personId2) {
+          const hasBlock = p.blockedWith.includes(personId1);
+          return {
+            ...p,
+            blockedWith: hasBlock
+              ? p.blockedWith.filter(id => id !== personId1)
+              : [...p.blockedWith, personId1],
+          };
+        }
+        return p;
+      });
+      return { ...state, people };
+    }
 
     case 'TOGGLE_SOUND':
       return { ...state, soundEnabled: action.payload };
@@ -228,6 +255,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         name,
         gender: inferredGender,
         tags,
+        blockedWith: [],
       };
     });
 
