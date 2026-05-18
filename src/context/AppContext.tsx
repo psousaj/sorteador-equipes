@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen } from '../types';
-import { getLastConfig, saveLastConfig, saveToHistory } from '../lib/storage';
+import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair } from '../types';
+import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs } from '../lib/storage';
 import { runDraw } from '../lib/sortAlgorithm';
 import { inferGender } from '../lib/genderInference';
 
@@ -60,6 +60,7 @@ type Action =
   | { type: 'REMOVE_TAG_FROM_PERSON'; payload: { id: string; tag: string } }
 
   | { type: 'REMOVE_PERSON'; payload: { id: string; name: string } }
+  | { type: 'UPDATE_PERSON_NAME'; payload: { id: string; name: string } }
   | { type: 'LOAD_CONFIG'; payload: { config: DrawConfig; people: Person[] } }
   | { type: 'CLEAR_PEOPLE' };
 
@@ -148,9 +149,18 @@ function reducer(state: AppState, action: Action): AppState {
       const people = state.people.map(p => {
         if (p.id !== id) return p;
         const hasTag = p.tags.includes(tag);
+        const newTags = hasTag ? p.tags.filter(t => t !== tag) : [...p.tags, tag];
+        // Update gender when toggling masculine/feminine tags
+        let newGender = p.gender;
+        if (tag === 'masculino') {
+          newGender = hasTag ? 'unknown' : 'male';
+        } else if (tag === 'feminino') {
+          newGender = hasTag ? 'unknown' : 'female';
+        }
         return {
           ...p,
-          tags: hasTag ? p.tags.filter(t => t !== tag) : [...p.tags, tag],
+          tags: newTags,
+          gender: newGender,
         };
       });
       return { ...state, people };
@@ -158,38 +168,64 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'ADD_TAG_TO_PERSON': {
       const { id, tag } = action.payload;
-      return {
-        ...state,
-        people: state.people.map(p =>
-          p.id === id && !p.tags.includes(tag)
-            ? { ...p, tags: [...p.tags, tag] }
-            : p
-        ),
-      };
+      let updatedPeople = state.people.map(p =>
+        p.id === id && !p.tags.includes(tag)
+          ? { ...p, tags: [...p.tags, tag] }
+          : p
+      );
+      // Also update gender if tag is masculine/feminine
+      if (tag === 'masculino') {
+        updatedPeople = updatedPeople.map(p =>
+          p.id === id ? { ...p, gender: 'male' as const } : p
+        );
+      } else if (tag === 'feminino') {
+        updatedPeople = updatedPeople.map(p =>
+          p.id === id ? { ...p, gender: 'female' as const } : p
+        );
+      }
+      return { ...state, people: updatedPeople };
     }
 
     case 'REMOVE_TAG_FROM_PERSON': {
       const { id, tag } = action.payload;
-      return {
-        ...state,
-        people: state.people.map(p =>
-          p.id === id ? { ...p, tags: p.tags.filter(t => t !== tag) } : p
-        ),
-      };
+      let updatedPeople = state.people.map(p =>
+        p.id === id ? { ...p, tags: p.tags.filter(t => t !== tag) } : p
+      );
+      // Also update gender if removing masculine/feminine tag
+      if (tag === 'masculino' || tag === 'feminino') {
+        updatedPeople = updatedPeople.map(p =>
+          p.id === id ? { ...p, gender: 'unknown' as const } : p
+        );
+      }
+      return { ...state, people: updatedPeople };
     }
-
 
 
     case 'REMOVE_PERSON': {
       const { id, name } = action.payload;
       const people = state.people.filter(p => p.id !== id);
+      // Clean up blockedWith references
+      const cleanedPeople = people.map(p => ({
+        ...p,
+        blockedWith: p.blockedWith.filter(bId => bId !== id),
+      }));
       // Also remove name from importedNames textarea
       const cleanedNames = state.importedNames
         .split(/[,\n]+/)
         .map(n => n.trim())
         .filter(n => n.toLowerCase() !== name.toLowerCase())
         .join(', ');
-      return { ...state, people, importedNames: cleanedNames };
+      return { ...state, people: cleanedPeople, importedNames: cleanedNames };
+    }
+
+    case 'UPDATE_PERSON_NAME': {
+      const { id, name } = action.payload;
+      return {
+        ...state,
+        people: state.people.map(p =>
+          p.id === id ? { ...p, name } : p
+        ),
+      };
     }
 
     case 'LOAD_CONFIG':
@@ -204,6 +240,7 @@ function reducer(state: AppState, action: Action): AppState {
       };
 
     case 'CLEAR_PEOPLE':
+      saveBlockedPairs([]);
       return { ...state, people: [], importedNames: '' };
 
     default:
@@ -236,6 +273,47 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Restore blocked pairs from localStorage
+  useEffect(() => {
+    if (state.people.length === 0) return;
+    const blockedPairs = getBlockedPairs();
+    if (blockedPairs.length === 0) return;
+    // Apply blocked pairs to people
+    const updatedPeople = state.people.map(p => {
+      const relatedPairs = blockedPairs.filter(
+        bp => bp.personId1 === p.id || bp.personId2 === p.id
+      );
+      const blockedIds = relatedPairs.map(bp =>
+        bp.personId1 === p.id ? bp.personId2 : bp.personId1
+      );
+      return { ...p, blockedWith: blockedIds };
+    });
+    dispatch({ type: 'SET_PEOPLE', payload: updatedPeople });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Save blocked pairs to localStorage whenever they change
+  useEffect(() => {
+    const pairs: BlockedPair[] = [];
+    const processed = new Set<string>();
+    state.people.forEach(p => {
+      p.blockedWith.forEach(bId => {
+        const key = [p.id, bId].sort().join('::');
+        if (processed.has(key)) return;
+        processed.add(key);
+        const other = state.people.find(op => op.id === bId);
+        if (other) {
+          pairs.push({
+            personId1: p.id,
+            personId2: bId,
+            personName1: p.name,
+            personName2: other.name,
+          });
+        }
+      });
+    });
+    saveBlockedPairs(pairs);
+  }, [state.people]);
+
   const parseNames = useCallback((raw: string) => {
     const names = raw
       .split(/[,\n]+/)
@@ -244,7 +322,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     if (names.length === 0) return;
 
-    const people: Person[] = names.map(name => {
+    // Filter out names that already exist (case-insensitive)
+    const existingNames = new Set(state.people.map(p => p.name.toLowerCase()));
+    const newNames = names.filter(n => !existingNames.has(n.toLowerCase()));
+
+    if (newNames.length === 0) return;
+
+    const people: Person[] = newNames.map(name => {
       const inferredGender = inferGender(name);
       const tags: string[] = [];
       if (inferredGender === 'male') tags.push('masculino');

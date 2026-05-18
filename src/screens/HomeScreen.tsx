@@ -1,16 +1,16 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users, Settings2, Shuffle, Volume2, VolumeX, Crown,
-  Plus, AlertTriangle, History, Trash2, UserPlus, X
+  Plus, AlertTriangle, History, Trash2, UserPlus, X, Ban, List, ChevronLeft
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useApp } from '../context/AppContext';
 import { PersonChip } from '../components/PersonChip';
 import { DEFAULT_TAGS } from '../types';
-import type { TeamRule, Person } from '../types';
+import type { TeamRule, Person, BlockedPair } from '../types';
 import { RuleRow } from '../components/RuleRow';
 import { playPopSound, playClickSound } from '../lib/sounds';
-import { saveCustomTags, getCustomTags } from '../lib/storage';
+import { saveCustomTags, getCustomTags, getBlockedPairs, saveBlockedPairs } from '../lib/storage';
 
 const TAG_COLORS: Record<string, string> = {
   masculino: 'bg-blue-100 text-blue-800',
@@ -29,8 +29,13 @@ export function HomeScreen() {
   const [captainTooltipOpen, setCaptainTooltipOpen] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [blockModePersonId, setBlockModePersonId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [editNameValue, setEditNameValue] = useState('');
+  const [showBlockedPanel, setShowBlockedPanel] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const captainTooltipRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   // Load custom tags from localStorage on mount
   useEffect(() => {
@@ -59,6 +64,21 @@ export function HomeScreen() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [captainTooltipOpen]);
 
+  // Focus name input when editing starts
+  useEffect(() => {
+    if (editingName && nameInputRef.current) {
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    }
+  }, [editingName]);
+
+  // Show error modal when drawError changes
+  useEffect(() => {
+    if (drawError) {
+      setShowErrorModal(true);
+    }
+  }, [drawError]);
+
   // All available tags for rules (predefined + custom, including gender tags)
   const availableRuleTags = useMemo(() => {
     return [...DEFAULT_TAGS.map(t => ({ value: t.value, label: t.label })), ...customTags.map(t => ({ value: t, label: t }))];
@@ -68,6 +88,29 @@ export function HomeScreen() {
     if (people.length === 0 || teamSize === 0) return 0;
     return Math.ceil(people.length / teamSize);
   }, [people.length, teamSize]);
+
+  // Get blocked pairs for display
+  const blockedPairs = useMemo(() => {
+    const pairs: BlockedPair[] = [];
+    const processed = new Set<string>();
+    people.forEach(p => {
+      p.blockedWith.forEach(bId => {
+        const key = [p.id, bId].sort().join('::');
+        if (processed.has(key)) return;
+        processed.add(key);
+        const other = people.find(op => op.id === bId);
+        if (other) {
+          pairs.push({
+            personId1: p.id,
+            personId2: bId,
+            personName1: p.name,
+            personName2: other.name,
+          });
+        }
+      });
+    });
+    return pairs;
+  }, [people]);
 
   const handleImport = () => {
     if (!importedNames.trim()) return;
@@ -102,19 +145,39 @@ export function HomeScreen() {
     setSelectedPerson(null);
   };
 
-  const handleToggleBlock = (personId: string) => {
-    if (blockModePersonId === null) {
-      setBlockModePersonId(personId);
-      setSelectedPerson(null);
-    } else if (blockModePersonId === personId) {
+  const handleToggleBlockMode = () => {
+    if (blockModePersonId !== null) {
       setBlockModePersonId(null);
     } else {
+      setBlockModePersonId('__active__');
+    }
+  };
+
+  // New block flow: click person A in mode, then person B
+  const handleBlockPersonClick = (personId: string) => {
+    if (blockModePersonId === '__active__') {
+      // First person clicked
+      setBlockModePersonId(personId);
+    } else if (typeof blockModePersonId === 'string' && blockModePersonId !== '__active__') {
+      if (blockModePersonId === personId) {
+        // Clicking same person cancels
+        setBlockModePersonId('__active__');
+        return;
+      }
+      // Second person clicked — create pair
       dispatch({
         type: 'TOGGLE_BLOCKED_PAIR',
         payload: { personId1: blockModePersonId, personId2: personId },
       });
       setBlockModePersonId(null);
     }
+  };
+
+  const handleUnblockPair = (pair: BlockedPair) => {
+    dispatch({
+      type: 'TOGGLE_BLOCKED_PAIR',
+      payload: { personId1: pair.personId1, personId2: pair.personId2 },
+    });
   };
 
   const handleAddRule = () => {
@@ -141,6 +204,35 @@ export function HomeScreen() {
     if (people.length === 0) return;
     if (soundEnabled) playClickSound();
     startDraw();
+  };
+
+  const handleCloseErrorModal = () => {
+    setShowErrorModal(false);
+    dispatch({ type: 'SET_DRAW_ERROR', payload: null });
+  };
+
+  const handleStartEditingName = (person: Person) => {
+    setEditingName(person.id);
+    setEditNameValue(person.name);
+  };
+
+  const handleSaveName = () => {
+    if (editingName && editNameValue.trim()) {
+      dispatch({ type: 'UPDATE_PERSON_NAME', payload: { id: editingName, name: editNameValue.trim() } });
+    }
+    setEditingName(null);
+    setEditNameValue('');
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveName();
+    }
+    if (e.key === 'Escape') {
+      setEditingName(null);
+      setEditNameValue('');
+    }
   };
 
   const personTags = useMemo(() => {
@@ -213,15 +305,6 @@ export function HomeScreen() {
                 >
                   Importar
                 </button>
-                {/* {people.length > 0 && (
-                  <button
-                    onClick={() => dispatch({ type: 'CLEAR_PEOPLE' })}
-                    className="px-3 py-2 text-sm text-gray-500 hover:text-red-500 transition-colors rounded-xl hover:bg-red-50"
-                    title="Limpar todos"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )} */}
               </div>
               {people.length > 0 && (
                 <p className="text-xs text-gray-400 mt-1">{people.length} pessoa(s) importada(s)</p>
@@ -232,15 +315,46 @@ export function HomeScreen() {
             {people.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                    <Users size={14} />
-                    Pessoas ({people.length})
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                      <Users size={14} />
+                      Pessoas ({people.length})
+                    </h2>
+                    <button
+                      onClick={handleToggleBlockMode}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        blockModePersonId !== null
+                          ? 'bg-red-100 text-red-600 border border-red-300'
+                          : 'text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent'
+                      }`}
+                      title={blockModePersonId !== null ? 'Sair do modo bloqueio' : 'Bloquear pares'}
+                    >
+                      <Ban size={16} />
+                    </button>
+                    <button
+                      onClick={() => setShowBlockedPanel(!showBlockedPanel)}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        showBlockedPanel
+                          ? 'bg-orange-100 text-orange-600 border border-orange-300'
+                          : 'text-gray-400 hover:text-orange-500 hover:bg-orange-50 border border-transparent'
+                      }`}
+                      title="Pares bloqueados"
+                    >
+                      <List size={16} />
+                      {blockedPairs.length > 0 && (
+                        <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                          {blockedPairs.length}
+                        </span>
+                      )}
+                    </button>
+                  </div>
                   <div className="flex items-center gap-2">
                     {blockModePersonId !== null && (
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-red-500 font-medium animate-pulse">
-                          Clique em outra pessoa para bloquear o par 🚫
+                          {blockModePersonId === '__active__'
+                            ? 'Clique em 2 pessoas para bloquear par 🚫'
+                            : 'Clique em outra pessoa para bloquear o par 🚫'}
                         </span>
                         <button
                           onClick={() => setBlockModePersonId(null)}
@@ -262,23 +376,30 @@ export function HomeScreen() {
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                   {people.map((person, idx) => {
-                    const blockedBySomeone = people.some(p => p.blockedWith.includes(person.id));
+                    const isBlockModeTarget =
+                      blockModePersonId !== null &&
+                      (blockModePersonId === '__active__' || blockModePersonId !== person.id);
                     return (
-                      <PersonChip
-                      key={person.id}
-                      person={person}
-                      index={idx}
-                      onGenderChange={handleGenderChange}
-                      onToggleTag={handleToggleTag}
-                      onRemove={(id) => handleRemovePerson(id, person.name)}
-                      onClickName={setSelectedPerson}
-                      onToggleBlock={handleToggleBlock}
-                      isInBlockMode={blockModePersonId === person.id}
-                      blockedBySomeone={blockedBySomeone && blockModePersonId === null}
-                      availableTags={personTags}
-                      customTags={customTags}
-                      onAddCustomTag={handleAddCustomTag}
-                    />
+                      <div
+                        key={person.id}
+                        className={`relative ${isBlockModeTarget ? 'cursor-pointer' : ''}`}
+                        onClick={() => isBlockModeTarget && handleBlockPersonClick(person.id)}
+                      >
+                        {isBlockModeTarget && (
+                          <div className="absolute inset-0 bg-red-500/5 rounded-xl border-2 border-dashed border-red-300 z-10 pointer-events-none" />
+                        )}
+                        <PersonChip
+                          person={person}
+                          index={idx}
+                          onGenderChange={handleGenderChange}
+                          onToggleTag={handleToggleTag}
+                          onRemove={(id) => handleRemovePerson(id, person.name)}
+                          onClickName={setSelectedPerson}
+                          availableTags={personTags}
+                          customTags={customTags}
+                          onAddCustomTag={handleAddCustomTag}
+                        />
+                      </div>
                     );
                   })}
                 </div>
@@ -447,7 +568,7 @@ export function HomeScreen() {
               )}
             </div>
 
-            {/* Draw error */}
+            {/* Draw error (inline, redundancy) */}
             {drawError && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
                 <AlertTriangle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
@@ -491,7 +612,7 @@ export function HomeScreen() {
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={() => setSelectedPerson(null)}
+              onClick={() => { setSelectedPerson(null); setEditingName(null); }}
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
             >
               <X size={18} />
@@ -501,7 +622,25 @@ export function HomeScreen() {
               <div className="text-4xl mb-2">
                 {selectedPerson.gender === 'male' ? '🚹' : selectedPerson.gender === 'female' ? '🚺' : '❓'}
               </div>
-              <h3 className="text-xl font-display font-bold text-gray-800">{selectedPerson.name}</h3>
+              {editingName === selectedPerson.id ? (
+                <input
+                  ref={nameInputRef}
+                  type="text"
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  onBlur={handleSaveName}
+                  onKeyDown={handleNameKeyDown}
+                  className="text-xl font-display font-bold text-gray-800 text-center w-full border-b-2 border-brand/50 outline-none bg-transparent"
+                />
+              ) : (
+                <h3
+                  className="text-xl font-display font-bold text-gray-800 cursor-pointer hover:text-brand transition-colors"
+                  onClick={() => handleStartEditingName(selectedPerson)}
+                >
+                  {selectedPerson.name}
+                </h3>
+              )}
+              <p className="text-xs text-gray-400 mt-1">Clique no nome para editar</p>
             </div>
 
             {/* Tags */}
@@ -523,19 +662,103 @@ export function HomeScreen() {
 
             <div className="flex flex-col gap-2 mt-6">
               <button
-                onClick={() => handleToggleBlock(selectedPerson.id)}
-                className="w-full py-3 rounded-xl bg-orange-50 text-orange-600 font-semibold text-sm hover:bg-orange-100 transition-colors flex items-center justify-center gap-2"
-              >
-                🚫 Bloquear {selectedPerson.name}
-              </button>
-              <button
                 onClick={() => handleRemovePerson(selectedPerson.id, selectedPerson.name)}
                 className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
               >
                 <Trash2 size={16} />
-                Remover {selectedPerson.name}
+                Remover {editingName === selectedPerson.id ? editNameValue || selectedPerson.name : selectedPerson.name}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Blocked pairs slide panel */}
+      {showBlockedPanel && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/20 z-40"
+            onClick={() => setShowBlockedPanel(false)}
+          />
+          <div className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 p-4 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Ban size={16} className="text-red-500" />
+                Pares bloqueados
+              </h3>
+              <button
+                onClick={() => setShowBlockedPanel(false)}
+                className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+              >
+                <ChevronLeft size={18} />
+              </button>
+            </div>
+
+            {blockedPairs.length === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-8">
+                Nenhum par bloqueado.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {blockedPairs.map(pair => (
+                  <div
+                    key={`${pair.personId1}-${pair.personId2}`}
+                    className="flex items-center justify-between bg-red-50 rounded-xl px-3 py-2"
+                  >
+                    <span className="text-sm text-gray-700">
+                      {pair.personName1} <span className="text-red-500">🚫</span> {pair.personName2}
+                    </span>
+                    <button
+                      onClick={() => handleUnblockPair(pair)}
+                      className="p-1 rounded-lg hover:bg-red-100 text-red-400 hover:text-red-600 transition-colors"
+                      title="Desbloquear par"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Error modal */}
+      {showErrorModal && drawError && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+          onClick={handleCloseErrorModal}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 shadow-xl max-w-md w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-4">
+              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
+                <AlertTriangle size={28} className="text-red-500" />
+              </div>
+              <h3 className="text-lg font-display font-bold text-gray-800">
+                Não foi possível sortear
+              </h3>
+            </div>
+
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+              <div className="text-sm text-red-700 whitespace-pre-wrap">
+                {drawError.split('\n').map((line, i) => (
+                  <div key={i} className="flex items-start gap-2 mb-1 last:mb-0">
+                    <span className="text-red-500 mt-0.5">•</span>
+                    <span>{line}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleCloseErrorModal}
+              className="w-full py-3 rounded-xl bg-brand text-white font-semibold text-sm hover:bg-brand-dark transition-colors"
+            >
+              Fechar
+            </button>
           </div>
         </div>
       )}

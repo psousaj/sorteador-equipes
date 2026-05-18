@@ -39,6 +39,13 @@ export type Screen = 'home' | 'animation' | 'result' | 'history';
 
 export type GenderOption = 'male' | 'female' | 'unknown';
 
+export interface BlockedPair {
+  personId1: string;
+  personId2: string;
+  personName1: string;
+  personName2: string;
+}
+
 export const DEFAULT_TAGS = [
   { value: 'masculino', label: 'Masculino', color: 'bg-blue-100 text-blue-800' },
   { value: 'feminino', label: 'Feminino', color: 'bg-pink-100 text-pink-800' },
