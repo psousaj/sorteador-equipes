@@ -12,11 +12,8 @@ import type { TeamRule, Person } from '../types';
 import { playPopSound, playClickSound } from '../lib/sounds';
 
 const TAG_COLORS: Record<string, string> = {
-  iniciante: 'bg-green-100 text-green-800',
-  experiente: 'bg-yellow-100 text-yellow-800',
-  levantador: 'bg-purple-100 text-purple-800',
-  menina: 'bg-pink-100 text-pink-800',
-  menino: 'bg-blue-100 text-blue-800',
+  masculino: 'bg-blue-100 text-blue-800',
+  feminino: 'bg-pink-100 text-pink-800',
 };
 
 export function HomeScreen() {
@@ -31,10 +28,10 @@ export function HomeScreen() {
   const [customTags, setCustomTags] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Available tags for rules (exclude gendered tags from min/max rules since they're handled separately)
+  // All available tags for rules (predefined + custom, including gender tags)
   const availableRuleTags = useMemo(() => {
-    return DEFAULT_TAGS.filter(t => t.value !== 'menina' && t.value !== 'menino');
-  }, []);
+    return [...DEFAULT_TAGS.map(t => ({ value: t.value, label: t.label })), ...customTags.map(t => ({ value: t, label: t }))];
+  }, [customTags]);
 
   const numTeams = useMemo(() => {
     if (people.length === 0 || teamSize === 0) return 0;

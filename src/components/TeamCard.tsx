@@ -15,11 +15,8 @@ function genderEmoji(gender: string): string {
 }
 
 const TAG_COLORS: Record<string, string> = {
-  iniciante: 'bg-green-100 text-green-600',
-  experiente: 'bg-yellow-100 text-yellow-600',
-  levantador: 'bg-purple-100 text-purple-600',
-  menina: 'bg-pink-100 text-pink-600',
-  menino: 'bg-blue-100 text-blue-600',
+  masculino: 'bg-blue-100 text-blue-600',
+  feminino: 'bg-pink-100 text-pink-600',
 };
 
 export function TeamCard({ team, colorIndex, compact = false }: TeamCardProps) {
@@ -29,7 +26,7 @@ export function TeamCard({ team, colorIndex, compact = false }: TeamCardProps) {
     const lines = [`*Time ${team.id}*`];
     team.members.forEach(m => {
       const isCaptain = team.captain?.id === m.id;
-      const tags = m.tags.filter(t => t !== 'menina' && t !== 'menino' && t !=='' ).join(', ');
+      const tags = m.tags.filter(t => t !== 'masculino' && t !== 'feminino' && t !=='' ).join(', ');
       const tagStr = tags ? ` (${tags})` : '';
       const captainStr = isCaptain ? ' 👑' : '';
       lines.push(`${m.name}${captainStr}${tagStr}`);
@@ -70,7 +67,7 @@ export function TeamCard({ team, colorIndex, compact = false }: TeamCardProps) {
               </span>
               <div className="ml-auto flex gap-1">
                 {m.tags
-                  .filter(t => t !== 'menina' && t !== 'menino')
+                  .filter(t => t !== 'masculino' && t !== 'feminino')
                   .map(t => (
                     <span
                       key={t}

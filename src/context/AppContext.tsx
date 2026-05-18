@@ -27,7 +27,7 @@ const initialState: AppState = {
   people: [],
   teamSize: 4,
   rules: [],
-  captainTag: 'levantador',
+  captainTag: '',
   enableCaptain: false,
   soundEnabled: true,
   currentResult: null,
@@ -43,6 +43,7 @@ type Action =
   | { type: 'SET_SCREEN'; payload: Screen }
   | { type: 'IMPORT_NAMES'; payload: string }
   | { type: 'SET_PEOPLE'; payload: Person[] }
+  | { type: 'ADD_PEOPLE'; payload: Person[] }
   | { type: 'SET_TEAM_SIZE'; payload: number }
   | { type: 'ADD_RULE'; payload: TeamRule }
   | { type: 'REMOVE_RULE'; payload: string }
@@ -73,6 +74,9 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SET_PEOPLE':
       return { ...state, people: action.payload };
 
+    case 'ADD_PEOPLE':
+      return { ...state, people: [...state.people, ...action.payload] };
+
     case 'SET_TEAM_SIZE':
       return { ...state, teamSize: action.payload };
 
@@ -101,9 +105,15 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, drawError: action.payload };
 
     case 'UPDATE_PERSON_GENDER': {
-      const people = state.people.map(p =>
-        p.id === action.payload.id ? { ...p, gender: action.payload.gender } : p
-      );
+      const { id, gender } = action.payload;
+      const people = state.people.map(p => {
+        if (p.id !== id) return p;
+        // Remove old gender tags, add new ones
+        let tags = p.tags.filter(t => t !== 'masculino' && t !== 'feminino');
+        if (gender === 'male') tags.push('masculino');
+        if (gender === 'female') tags.push('feminino');
+        return { ...p, gender, tags };
+      });
       return { ...state, people };
     }
 
@@ -227,16 +237,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .map(n => n.trim())
       .filter(Boolean);
 
-    const people: Person[] = names.map(name => ({
-      id: uuidv4(),
-      name,
-      gender: inferGender(name),
-      tags: [],
-      blockedWith: [],
-    }));
+    if (names.length === 0) return;
 
-    dispatch({ type: 'SET_PEOPLE', payload: people });
-  }, []);
+    const people: Person[] = names.map(name => {
+      const inferredGender = inferGender(name);
+      const tags: string[] = [];
+      if (inferredGender === 'male') tags.push('masculino');
+      if (inferredGender === 'female') tags.push('feminino');
+
+      return {
+        id: uuidv4(),
+        name,
+        gender: inferredGender,
+        tags,
+        blockedWith: [],
+      };
+    });
+
+    if (state.people.length === 0) {
+      dispatch({ type: 'SET_PEOPLE', payload: people });
+    } else {
+      dispatch({ type: 'ADD_PEOPLE', payload: people });
+    }
+  }, [state.people]);
 
   const startDraw = useCallback(() => {
     const config: DrawConfig = {

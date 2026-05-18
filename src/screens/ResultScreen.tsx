@@ -20,7 +20,7 @@ export function ResultScreen() {
       lines.push(`*Time ${team.id}*`);
       team.members.forEach(m => {
         const isCaptain = team.captain?.id === m.id;
-        const tags = m.tags.filter(t => t !== 'menina' && t !== 'menino').join(', ');
+        const tags = m.tags.filter(t => t !== 'masculino' && t !== 'feminino').join(', ');
         const tagStr = tags ? ` (${tags})` : '';
         lines.push(`${isCaptain ? '👑 ' : ''}${m.name}${tagStr}`);
       });

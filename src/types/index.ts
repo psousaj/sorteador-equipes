@@ -40,11 +40,8 @@ export type Screen = 'home' | 'animation' | 'result' | 'history';
 export type GenderOption = 'male' | 'female' | 'unknown';
 
 export const DEFAULT_TAGS = [
-  { value: 'iniciante', label: 'Iniciante', color: 'bg-green-100 text-green-800' },
-  { value: 'experiente', label: 'Experiente', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'levantador', label: 'Levantador', color: 'bg-purple-100 text-purple-800' },
-  { value: 'menina', label: 'Menina', color: 'bg-pink-100 text-pink-800' },
-  { value: 'menino', label: 'Menino', color: 'bg-blue-100 text-blue-800' },
+  { value: 'masculino', label: 'Masculino', color: 'bg-blue-100 text-blue-800' },
+  { value: 'feminino', label: 'Feminino', color: 'bg-pink-100 text-pink-800' },
 ] as const;
 
 export const TEAM_COLORS = [
