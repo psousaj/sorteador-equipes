@@ -105,6 +105,7 @@ export function HomeScreen() {
   const handleToggleBlock = (personId: string) => {
     if (blockModePersonId === null) {
       setBlockModePersonId(personId);
+      setSelectedPerson(null);
     } else if (blockModePersonId === personId) {
       setBlockModePersonId(null);
     } else {
@@ -520,13 +521,21 @@ export function HomeScreen() {
               })}
             </div>
 
-            <button
-              onClick={() => handleRemovePerson(selectedPerson.id, selectedPerson.name)}
-              className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-            >
-              <Trash2 size={16} />
-              Remover {selectedPerson.name}
-            </button>
+            <div className="flex flex-col gap-2 mt-6">
+              <button
+                onClick={() => handleToggleBlock(selectedPerson.id)}
+                className="w-full py-3 rounded-xl bg-orange-50 text-orange-600 font-semibold text-sm hover:bg-orange-100 transition-colors flex items-center justify-center gap-2"
+              >
+                🚫 Bloquear {selectedPerson.name}
+              </button>
+              <button
+                onClick={() => handleRemovePerson(selectedPerson.id, selectedPerson.name)}
+                className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 size={16} />
+                Remover {selectedPerson.name}
+              </button>
+            </div>
           </div>
         </div>
       )}
