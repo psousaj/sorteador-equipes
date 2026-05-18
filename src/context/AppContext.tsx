@@ -154,11 +154,15 @@ function reducer(state: AppState, action: Action): AppState {
 
 
     case 'REMOVE_PERSON': {
-      const { id } = action.payload;
-      return {
-        ...state,
-        people: state.people.filter(p => p.id !== id),
-      };
+      const { id, name } = action.payload;
+      const people = state.people.filter(p => p.id !== id);
+      // Also remove name from importedNames textarea
+      const cleanedNames = state.importedNames
+        .split(/[,\n]+/)
+        .map(n => n.trim())
+        .filter(n => n.toLowerCase() !== name.toLowerCase())
+        .join(', ');
+      return { ...state, people, importedNames: cleanedNames };
     }
 
     case 'LOAD_CONFIG':
