@@ -179,19 +179,25 @@ export function HomeScreen() {
               <textarea
                 ref={textareaRef}
                 value={importedNames}
-                onChange={(e) => dispatch({ type: 'IMPORT_NAMES', payload: e.target.value })}
+                onChange={(e) => {
+                  dispatch({ type: 'IMPORT_NAMES', payload: e.target.value });
+                  // Auto-grow
+                  const el = e.target;
+                  el.style.height = 'auto';
+                  el.style.height = Math.max(80, el.scrollHeight) + 'px';
+                }}
                 onKeyDown={handleTextareaKeyDown}
-                placeholder="João, Maria, Pedro, Ana..."
-                className="w-full h-20 px-3 py-2 text-sm border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all"
+                placeholder="João, Maria, Pedro, Ana...\n(um por linha ou separados por vírgula)"
+                className="w-full min-h-[80px] px-3 py-2 text-sm border rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all overflow-hidden"
               />
               <div className="flex gap-2 mt-2">
                 <button
                   onClick={handleImport}
                   className="flex-1 bg-brand text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-brand-dark transition-colors"
                 >
-                  Importar ({importedNames.split(/[,\\n]+/).filter(Boolean).length} nomes)
+                  Importar
                 </button>
-                {people.length > 0 && (
+                {/* {people.length > 0 && (
                   <button
                     onClick={() => dispatch({ type: 'CLEAR_PEOPLE' })}
                     className="px-3 py-2 text-sm text-gray-500 hover:text-red-500 transition-colors rounded-xl hover:bg-red-50"
@@ -199,7 +205,7 @@ export function HomeScreen() {
                   >
                     <Trash2 size={16} />
                   </button>
-                )}
+                )} */}
               </div>
               {people.length > 0 && (
                 <p className="text-xs text-gray-400 mt-1">{people.length} pessoa(s) importada(s)</p>
