@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { Person } from '../types';
 import { DEFAULT_TAGS } from '../types';
@@ -8,10 +9,7 @@ interface PersonChipProps {
   index: number;
   onGenderChange: (id: string, gender: Person['gender']) => void;
   onToggleTag: (id: string, tag: string) => void;
-  onToggleBlock: (id: string) => void;
   onRemove: (id: string) => void;
-  isInBlockMode: boolean;
-  blockedBySomeone: boolean;
   availableTags: string[];
   customTags: string[];
   onAddCustomTag: (id: string, tag: string) => void;
@@ -28,14 +26,14 @@ export function PersonChip({
   index,
   onGenderChange,
   onToggleTag,
-  onToggleBlock,
   onRemove,
-  isInBlockMode,
-  blockedBySomeone,
   availableTags,
   customTags,
   onAddCustomTag,
 }: PersonChipProps) {
+  const [tagMenuOpen, setTagMenuOpen] = useState(false);
+  const tagMenuRef = useRef<HTMLDivElement>(null);
+
   const colorIndex = index % TEAM_COLORS.length;
 
   const genderBorder = person.gender === 'male'
@@ -44,18 +42,24 @@ export function PersonChip({
       ? 'border-pink-300'
       : 'border-orange-300';
 
+  // Close tag menu on click outside
+  useEffect(() => {
+    if (!tagMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (tagMenuRef.current && !tagMenuRef.current.contains(e.target as Node)) {
+        setTagMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [tagMenuOpen]);
+
   return (
     <div
       className={`
         relative group rounded-xl border-2 p-3 transition-all duration-200
-        ${isInBlockMode
-          ? 'border-red-400 bg-red-50 shadow-lg scale-105'
-          : blockedBySomeone
-            ? 'border-red-300 bg-red-50/50'
-            : `${genderBorder} bg-white hover:shadow-md hover:border-brand-light`
-        }
+        ${genderBorder} bg-white hover:shadow-md hover:border-brand-light
       `}
-      onClick={() => isInBlockMode && onToggleBlock(person.id)}
     >
       {/* Header: Name + Gender + Remove */}
       <div className="flex items-center gap-2 mb-2">
@@ -112,40 +116,38 @@ export function PersonChip({
           </button>
         ))}
         {/* Add tag button */}
-        <div className="relative group/tag">
+        <div className="relative" ref={tagMenuRef}>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const menu = (e.target as HTMLElement)
-                .closest('.group')!
-                .querySelector('.tag-menu') as HTMLElement;
-              if (menu) menu.classList.toggle('hidden');
+              setTagMenuOpen(prev => !prev);
             }}
             className="text-xs px-2 py-0.5 rounded-full border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand hover:text-brand transition-colors"
           >
             + Tag
           </button>
-          <div className="tag-menu hidden absolute top-full left-0 mt-1 z-20 bg-white border rounded-xl shadow-xl p-2 min-w-[140px]">
-            {availableTags
-              .filter(t => !person.tags.includes(t))
-              .map(tag => (
-                <button
-                  key={tag}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleTag(person.id, tag);
-                    const menu = (e.target as HTMLElement).closest('.tag-menu')!;
-                    menu.classList.add('hidden');
-                  }}
-                  className="block w-full text-left text-xs px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  {tag}
-                </button>
-              ))}
-            {availableTags.filter(t => !person.tags.includes(t)).length === 0 && (
-              <span className="text-xs text-gray-400 px-2">Todas tags já adicionadas</span>
-            )}
-          </div>
+          {tagMenuOpen && (
+            <div className="absolute top-full left-0 mt-1 z-20 bg-white border rounded-xl shadow-xl p-2 min-w-[140px]">
+              {availableTags
+                .filter(t => !person.tags.includes(t))
+                .map(tag => (
+                  <button
+                    key={tag}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleTag(person.id, tag);
+                      setTagMenuOpen(false);
+                    }}
+                    className="block w-full text-left text-xs px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              {availableTags.filter(t => !person.tags.includes(t)).length === 0 && (
+                <span className="text-xs text-gray-400 px-2">Todas tags já adicionadas</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -154,7 +156,7 @@ export function PersonChip({
         <input
           type="text"
           placeholder="Tag personalizada..."
-          className="flex-1 text-xs px-2 py-1 border rounded-lg focus:outline-none focus:border-brand"
+          className="w-3/5 text-xs px-2 py-1 border rounded-lg focus:outline-none focus:border-brand"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               const value = (e.target as HTMLInputElement).value.trim();
@@ -167,13 +169,6 @@ export function PersonChip({
           onClick={(e) => e.stopPropagation()}
         />
       </div>
-
-      {/* Block indicator */}
-      {person.blockedWith.length > 0 && (
-        <div className="mt-1.5 text-xs text-red-500 font-medium">
-          🚫 {person.blockedWith.length} bloqueio(s)
-        </div>
-      )}
     </div>
   );
 }

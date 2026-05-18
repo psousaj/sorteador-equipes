@@ -1,14 +1,14 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users, Settings2, Shuffle, Volume2, VolumeX, Crown,
-  Plus, AlertTriangle, History, Trash2, UserPlus, ChevronDown
+  Plus, AlertTriangle, History, Trash2, UserPlus
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useApp } from '../context/AppContext';
 import { PersonChip } from '../components/PersonChip';
-import { RuleRow } from '../components/RuleRow';
 import { DEFAULT_TAGS } from '../types';
 import type { TeamRule, Person } from '../types';
+import { RuleRow } from '../components/RuleRow';
 import { playPopSound, playClickSound } from '../lib/sounds';
 import { saveCustomTags, getCustomTags } from '../lib/storage';
 
@@ -19,15 +19,16 @@ const TAG_COLORS: Record<string, string> = {
 
 export function HomeScreen() {
   const { state, dispatch, parseNames, startDraw } = useApp();
-  const { people, teamSize, rules, enableCaptain, captainTag, soundEnabled, importedNames, drawError } = state;
+  const { people, teamSize, rules, enableCaptain, soundEnabled, importedNames, drawError } = state;
 
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [newRuleTag, setNewRuleTag] = useState('');
   const [newRuleType, setNewRuleType] = useState<'min' | 'max' | 'exact'>('min');
   const [newRuleValue, setNewRuleValue] = useState(1);
-  const [blockModePersonId, setBlockModePersonId] = useState<string | null>(null);
   const [customTags, setCustomTags] = useState<string[]>([]);
+  const [captainTooltipOpen, setCaptainTooltipOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const captainTooltipRef = useRef<HTMLDivElement>(null);
 
   // Load custom tags from localStorage on mount
   useEffect(() => {
@@ -43,6 +44,18 @@ export function HomeScreen() {
       saveCustomTags(customTags);
     }
   }, [customTags]);
+
+  // Close captain tooltip on click outside
+  useEffect(() => {
+    if (!captainTooltipOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (captainTooltipRef.current && !captainTooltipRef.current.contains(e.target as Node)) {
+        setCaptainTooltipOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [captainTooltipOpen]);
 
   // All available tags for rules (predefined + custom, including gender tags)
   const availableRuleTags = useMemo(() => {
@@ -80,20 +93,6 @@ export function HomeScreen() {
       setCustomTags(prev => [...prev, tag]);
     }
     dispatch({ type: 'ADD_TAG_TO_PERSON', payload: { id, tag } });
-  };
-
-  const handleToggleBlock = (personId: string) => {
-    if (blockModePersonId === null) {
-      setBlockModePersonId(personId);
-    } else if (blockModePersonId === personId) {
-      setBlockModePersonId(null);
-    } else {
-      dispatch({
-        type: 'TOGGLE_BLOCKED_PAIR',
-        payload: { personId1: blockModePersonId, personId2: personId },
-      });
-      setBlockModePersonId(null);
-    }
   };
 
   const handleRemovePerson = (id: string) => {
@@ -188,7 +187,7 @@ export function HomeScreen() {
                   onClick={handleImport}
                   className="flex-1 bg-brand text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-brand-dark transition-colors"
                 >
-                  Importar ({importedNames.split(/[,\n]+/).filter(Boolean).length} nomes)
+                  Importar ({importedNames.split(/[,\\n]+/).filter(Boolean).length} nomes)
                 </button>
                 {people.length > 0 && (
                   <button
@@ -213,41 +212,29 @@ export function HomeScreen() {
                     <Users size={14} />
                     Pessoas ({people.length})
                   </h2>
-                  {blockModePersonId !== null && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-red-500 font-medium animate-pulse">
-                        Clique em outra pessoa para bloquear o par 🚫
-                      </span>
-                      <button
-                        onClick={() => setBlockModePersonId(null)}
-                        className="text-xs text-gray-400 hover:text-gray-600"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => dispatch({ type: 'CLEAR_PEOPLE' })}
+                    className="text-xs flex items-center gap-1 text-red-400 hover:text-red-600 font-semibold transition-colors"
+                    title="Limpar lista de pessoas"
+                  >
+                    <Trash2 size={14} />
+                    Limpar
+                  </button>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
-                  {people.map((person, idx) => {
-                    // Find if someone has blocked this person
-                    const blockedBySomeone = people.some(p => p.blockedWith.includes(person.id));
-                    return (
-                      <PersonChip
-                        key={person.id}
-                        person={person}
-                        index={idx}
-                        onGenderChange={handleGenderChange}
-                        onToggleTag={handleToggleTag}
-                        onToggleBlock={handleToggleBlock}
-                        onRemove={handleRemovePerson}
-                        isInBlockMode={blockModePersonId === person.id}
-                        blockedBySomeone={blockedBySomeone && blockModePersonId === null}
-                        availableTags={personTags}
-                        customTags={customTags}
-                        onAddCustomTag={handleAddCustomTag}
-                      />
-                    );
-                  })}
+                  {people.map((person, idx) => (
+                    <PersonChip
+                      key={person.id}
+                      person={person}
+                      index={idx}
+                      onGenderChange={handleGenderChange}
+                      onToggleTag={handleToggleTag}
+                      onRemove={handleRemovePerson}
+                      availableTags={personTags}
+                      customTags={customTags}
+                      onAddCustomTag={handleAddCustomTag}
+                    />
+                  ))}
                 </div>
               </div>
             )}
@@ -371,18 +358,28 @@ export function HomeScreen() {
               )}
             </div>
 
-          {/* Captain config */}
+            {/* Captain config */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <Crown size={16} />
                   Capitão automático
-                  <span className="relative group/help">
-                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold cursor-help">?</span>
-                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/help:block bg-gray-800 text-white text-[11px] px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
-                      Seleciona um capitão aleatório por time no sorteio
+                  <div className="relative" ref={captainTooltipRef}>
+                    <span
+                      className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold cursor-help"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCaptainTooltipOpen(prev => !prev);
+                      }}
+                    >
+                      ?
                     </span>
-                  </span>
+                    {captainTooltipOpen && (
+                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-gray-800 text-white text-[11px] px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
+                        Seleciona um capitão aleatório por time no sorteio
+                      </span>
+                    )}
+                  </div>
                 </label>
                 <button
                   onClick={() => dispatch({ type: 'TOGGLE_CAPTAIN', payload: !enableCaptain })}

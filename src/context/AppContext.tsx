@@ -18,7 +18,7 @@ interface AppState {
   currentResult: DrawResult | null;
   animationDone: boolean;
   drawError: string | null;
-  editingBlockedPair: { personId: string } | null;
+
   importedNames: string; // raw textarea content
 }
 
@@ -33,7 +33,7 @@ const initialState: AppState = {
   currentResult: null,
   animationDone: false,
   drawError: null,
-  editingBlockedPair: null,
+
   importedNames: '',
 };
 
@@ -57,8 +57,7 @@ type Action =
   | { type: 'TOGGLE_PERSON_TAG'; payload: { id: string; tag: string } }
   | { type: 'ADD_TAG_TO_PERSON'; payload: { id: string; tag: string } }
   | { type: 'REMOVE_TAG_FROM_PERSON'; payload: { id: string; tag: string } }
-  | { type: 'TOGGLE_BLOCKED_PAIR'; payload: { personId1: string; personId2: string } }
-  | { type: 'SET_BLOCKED_PAIR_EDITING'; payload: { personId: string } | null }
+
   | { type: 'REMOVE_PERSON'; payload: string }
   | { type: 'LOAD_CONFIG'; payload: { config: DrawConfig; people: Person[] } }
   | { type: 'CLEAR_PEOPLE' };
@@ -152,34 +151,7 @@ function reducer(state: AppState, action: Action): AppState {
       };
     }
 
-    case 'TOGGLE_BLOCKED_PAIR': {
-      const { personId1, personId2 } = action.payload;
-      const people = state.people.map(p => {
-        if (p.id === personId1) {
-          const hasBlock = p.blockedWith.includes(personId2);
-          return {
-            ...p,
-            blockedWith: hasBlock
-              ? p.blockedWith.filter(id => id !== personId2)
-              : [...p.blockedWith, personId2],
-          };
-        }
-        if (p.id === personId2) {
-          const hasBlock = p.blockedWith.includes(personId1);
-          return {
-            ...p,
-            blockedWith: hasBlock
-              ? p.blockedWith.filter(id => id !== personId1)
-              : [...p.blockedWith, personId1],
-          };
-        }
-        return p;
-      });
-      return { ...state, people };
-    }
 
-    case 'SET_BLOCKED_PAIR_EDITING':
-      return { ...state, editingBlockedPair: action.payload };
 
     case 'REMOVE_PERSON':
       return {

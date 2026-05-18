@@ -3,7 +3,6 @@ export interface Person {
   name: string;
   gender: 'male' | 'female' | 'unknown';
   tags: string[];
-  blockedWith: string[];
 }
 
 export interface TeamRule {
