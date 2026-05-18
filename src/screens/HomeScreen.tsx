@@ -10,6 +10,7 @@ import { RuleRow } from '../components/RuleRow';
 import { DEFAULT_TAGS } from '../types';
 import type { TeamRule, Person } from '../types';
 import { playPopSound, playClickSound } from '../lib/sounds';
+import { saveCustomTags, getCustomTags } from '../lib/storage';
 
 const TAG_COLORS: Record<string, string> = {
   masculino: 'bg-blue-100 text-blue-800',
@@ -27,6 +28,21 @@ export function HomeScreen() {
   const [blockModePersonId, setBlockModePersonId] = useState<string | null>(null);
   const [customTags, setCustomTags] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load custom tags from localStorage on mount
+  useEffect(() => {
+    const saved = getCustomTags();
+    if (saved.length > 0) {
+      setCustomTags(saved);
+    }
+  }, []);
+
+  // Save custom tags to localStorage whenever they change
+  useEffect(() => {
+    if (customTags.length > 0) {
+      saveCustomTags(customTags);
+    }
+  }, [customTags]);
 
   // All available tags for rules (predefined + custom, including gender tags)
   const availableRuleTags = useMemo(() => {
@@ -211,7 +227,7 @@ export function HomeScreen() {
                     </div>
                   )}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                   {people.map((person, idx) => {
                     // Find if someone has blocked this person
                     const blockedBySomeone = people.some(p => p.blockedWith.includes(person.id));
@@ -355,12 +371,18 @@ export function HomeScreen() {
               )}
             </div>
 
-            {/* Captain config */}
+          {/* Captain config */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                   <Crown size={16} />
-                  Capitão
+                  Capitão automático
+                  <span className="relative group/help">
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold cursor-help">?</span>
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover/help:block bg-gray-800 text-white text-[11px] px-3 py-1.5 rounded-lg whitespace-nowrap shadow-lg z-10">
+                      Seleciona um capitão aleatório por time no sorteio
+                    </span>
+                  </span>
                 </label>
                 <button
                   onClick={() => dispatch({ type: 'TOGGLE_CAPTAIN', payload: !enableCaptain })}
@@ -376,21 +398,9 @@ export function HomeScreen() {
                 </button>
               </div>
               {enableCaptain && (
-                <div className="mt-3">
-                  <select
-                    value={captainTag}
-                    onChange={(e) => dispatch({ type: 'SET_CAPTAIN_TAG', payload: e.target.value })}
-                    className="w-full text-sm px-3 py-1.5 rounded-xl border focus:outline-none focus:border-brand"
-                  >
-                    <option value="">Aleatório (qualquer um)</option>
-                    {availableRuleTags.map(t => (
-                      <option key={t.value} value={t.value}>{t.label} = Capitão</option>
-                    ))}
-                  </select>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {captainTag ? `Quem tiver a tag "${captainTag}" vira capitão.` : 'Qualquer pessoa pode ser capitã.'}
-                  </p>
-                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  Um capitão aleatório será sorteado para cada time.
+                </p>
               )}
             </div>
 

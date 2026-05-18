@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
   history: 'sorteador:history',
   lastConfig: 'sorteador:lastConfig',
   lastPeople: 'sorteador:lastPeople',
+  customTags: 'sorteador:customTags',
 } as const;
 
 const MAX_HISTORY = 50;
@@ -67,5 +68,25 @@ export function getLastConfig(): {
     };
   } catch {
     return { config: null, people: [] };
+  }
+}
+
+// --- Custom Tags ---
+
+export function saveCustomTags(tags: string[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.customTags, JSON.stringify(tags));
+  } catch {
+    // Ignore
+  }
+}
+
+export function getCustomTags(): string[] {
+  try {
+    const data = localStorage.getItem(STORAGE_KEYS.customTags);
+    if (!data) return [];
+    return JSON.parse(data) as string[];
+  } catch {
+    return [];
   }
 }

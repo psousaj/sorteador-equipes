@@ -38,6 +38,12 @@ export function PersonChip({
 }: PersonChipProps) {
   const colorIndex = index % TEAM_COLORS.length;
 
+  const genderBorder = person.gender === 'male'
+    ? 'border-blue-300'
+    : person.gender === 'female'
+      ? 'border-pink-300'
+      : 'border-orange-300';
+
   return (
     <div
       className={`
@@ -46,7 +52,7 @@ export function PersonChip({
           ? 'border-red-400 bg-red-50 shadow-lg scale-105'
           : blockedBySomeone
             ? 'border-red-300 bg-red-50/50'
-            : 'border-gray-200 bg-white hover:shadow-md hover:border-brand-light'
+            : `${genderBorder} bg-white hover:shadow-md hover:border-brand-light`
         }
       `}
       onClick={() => isInBlockMode && onToggleBlock(person.id)}
