@@ -58,7 +58,7 @@ type Action =
   | { type: 'ADD_TAG_TO_PERSON'; payload: { id: string; tag: string } }
   | { type: 'REMOVE_TAG_FROM_PERSON'; payload: { id: string; tag: string } }
 
-  | { type: 'REMOVE_PERSON'; payload: string }
+  | { type: 'REMOVE_PERSON'; payload: { id: string; name: string } }
   | { type: 'LOAD_CONFIG'; payload: { config: DrawConfig; people: Person[] } }
   | { type: 'CLEAR_PEOPLE' };
 
@@ -153,11 +153,13 @@ function reducer(state: AppState, action: Action): AppState {
 
 
 
-    case 'REMOVE_PERSON':
+    case 'REMOVE_PERSON': {
+      const { id } = action.payload;
       return {
         ...state,
-        people: state.people.filter(p => p.id !== action.payload),
+        people: state.people.filter(p => p.id !== id),
       };
+    }
 
     case 'LOAD_CONFIG':
       return {
@@ -222,7 +224,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         name,
         gender: inferredGender,
         tags,
-        blockedWith: [],
       };
     });
 

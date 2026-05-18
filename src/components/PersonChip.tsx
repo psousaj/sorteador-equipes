@@ -10,6 +10,7 @@ interface PersonChipProps {
   onGenderChange: (id: string, gender: Person['gender']) => void;
   onToggleTag: (id: string, tag: string) => void;
   onRemove: (id: string) => void;
+  onClickName: (person: Person) => void;
   availableTags: string[];
   customTags: string[];
   onAddCustomTag: (id: string, tag: string) => void;
@@ -27,6 +28,7 @@ export function PersonChip({
   onGenderChange,
   onToggleTag,
   onRemove,
+  onClickName,
   availableTags,
   customTags,
   onAddCustomTag,
@@ -75,7 +77,13 @@ export function PersonChip({
         >
           {genderEmoji[person.gender]}
         </button>
-        <span className="font-body font-semibold text-gray-800 flex-1 truncate">
+        <span
+          className="font-body font-semibold text-gray-800 flex-1 truncate cursor-pointer hover:text-brand transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClickName(person);
+          }}
+        >
           {person.name}
         </span>
         <button

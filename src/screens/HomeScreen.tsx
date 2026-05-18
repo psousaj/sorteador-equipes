@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users, Settings2, Shuffle, Volume2, VolumeX, Crown,
-  Plus, AlertTriangle, History, Trash2, UserPlus
+  Plus, AlertTriangle, History, Trash2, UserPlus, X
 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useApp } from '../context/AppContext';
@@ -27,6 +27,7 @@ export function HomeScreen() {
   const [newRuleValue, setNewRuleValue] = useState(1);
   const [customTags, setCustomTags] = useState<string[]>([]);
   const [captainTooltipOpen, setCaptainTooltipOpen] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const captainTooltipRef = useRef<HTMLDivElement>(null);
 
@@ -74,7 +75,7 @@ export function HomeScreen() {
   };
 
   const handleTextareaKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       handleImport();
     }
@@ -95,8 +96,9 @@ export function HomeScreen() {
     dispatch({ type: 'ADD_TAG_TO_PERSON', payload: { id, tag } });
   };
 
-  const handleRemovePerson = (id: string) => {
-    dispatch({ type: 'REMOVE_PERSON', payload: id });
+  const handleRemovePerson = (id: string, name: string) => {
+    dispatch({ type: 'REMOVE_PERSON', payload: { id, name } });
+    setSelectedPerson(null);
   };
 
   const handleAddRule = () => {
@@ -229,7 +231,8 @@ export function HomeScreen() {
                       index={idx}
                       onGenderChange={handleGenderChange}
                       onToggleTag={handleToggleTag}
-                      onRemove={handleRemovePerson}
+                      onRemove={(id) => handleRemovePerson(id, person.name)}
+                      onClickName={setSelectedPerson}
                       availableTags={personTags}
                       customTags={customTags}
                       onAddCustomTag={handleAddCustomTag}
@@ -433,6 +436,58 @@ export function HomeScreen() {
           </div>
         </div>
       </div>
+
+      {/* Person detail modal */}
+      {selectedPerson && (
+        <div
+          className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedPerson(null)}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedPerson(null)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-2">
+                {selectedPerson.gender === 'male' ? '🚹' : selectedPerson.gender === 'female' ? '🚺' : '❓'}
+              </div>
+              <h3 className="text-xl font-display font-bold text-gray-800">{selectedPerson.name}</h3>
+            </div>
+
+            {/* Tags */}
+            <div className="flex flex-wrap justify-center gap-1.5 mb-6">
+              {selectedPerson.tags.length === 0 && (
+                <span className="text-xs text-gray-400">Nenhuma tag</span>
+              )}
+              {selectedPerson.tags.map(tag => {
+                const tagDef = DEFAULT_TAGS.find(t => t.value === tag);
+                const tagColor = tagDef?.color || 'bg-gray-100 text-gray-600';
+                const tagLabel = tagDef?.label || tag;
+                return (
+                  <span key={tag} className={`text-xs px-3 py-1 rounded-full font-medium ${tagColor}`}>
+                    {tagLabel}
+                  </span>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => handleRemovePerson(selectedPerson.id, selectedPerson.name)}
+              className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+            >
+              <Trash2 size={16} />
+              Remover {selectedPerson.name}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
