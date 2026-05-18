@@ -14,6 +14,8 @@ interface PersonChipProps {
   availableTags: string[];
   customTags: string[];
   onAddCustomTag: (id: string, tag: string) => void;
+  isBlockModeTarget?: boolean;
+  onBlockSelect?: (id: string) => void;
 }
 
 const genderEmoji: Record<string, string> = {
@@ -32,6 +34,8 @@ export function PersonChip({
   availableTags,
   customTags,
   onAddCustomTag,
+  isBlockModeTarget,
+  onBlockSelect,
 }: PersonChipProps) {
   const [tagMenuOpen, setTagMenuOpen] = useState(false);
   const tagMenuRef = useRef<HTMLDivElement>(null);
@@ -59,83 +63,68 @@ export function PersonChip({
   return (
     <div
       className={`
-        relative group rounded-xl border-2 p-3 transition-all duration-200
-        ${genderBorder} bg-white hover:shadow-md hover:border-brand-light
+        relative group rounded-xl border-2 p-3 transition-all duration-200 select-none
+        ${isBlockModeTarget
+          ? 'border-red-300 bg-red-50/30 cursor-pointer hover:shadow-md hover:border-red-400 hover:bg-red-50/60'
+          : `${genderBorder} bg-white hover:shadow-md hover:border-brand-light`
+        }
       `}
+      onClick={() => isBlockModeTarget && onBlockSelect?.(person.id)}
     >
       {/* Header: Name + Gender + Remove */}
       <div className="flex items-center gap-2 mb-2">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            const genders: Person['gender'][] = ['male', 'female', 'unknown'];
-            const idx = genders.indexOf(person.gender);
-            onGenderChange(person.id, genders[(idx + 1) % genders.length]);
-          }}
-          className="text-lg hover:scale-110 transition-transform cursor-pointer"
-          title="Clique para alternar gênero"
-        >
+        <span className={`text-lg ${isBlockModeTarget ? '' : 'cursor-pointer hover:scale-110 transition-transform'}`}>
           {genderEmoji[person.gender]}
-        </button>
+        </span>
         <span
-          className="font-body font-semibold text-gray-800 flex-1 truncate cursor-pointer hover:text-brand transition-colors"
+          className={`font-body font-semibold flex-1 truncate ${
+            isBlockModeTarget ? 'text-gray-800' : 'text-gray-800 cursor-pointer hover:text-brand transition-colors'
+          }`}
           onClick={(e) => {
             e.stopPropagation();
-            onClickName(person);
+            if (!isBlockModeTarget) onClickName(person);
           }}
         >
           {person.name}
         </span>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(person.id);
-          }}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
-        >
-          <X size={16} />
-        </button>
+        {!isBlockModeTarget && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(person.id);
+            }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className={`flex flex-wrap gap-1.5 ${isBlockModeTarget ? 'pointer-events-none' : ''}`}>
         {[...DEFAULT_TAGS.filter(t => person.tags.includes(t.value))].map(tag => (
-          <button
-            key={tag.value}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleTag(person.id, tag.value);
-            }}
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${tag.color} hover:opacity-75 transition-opacity`}
-          >
-            {tag.label} ✕
-          </button>
+          <span key={tag.value} className={`text-xs px-2 py-0.5 rounded-full font-medium ${tag.color}`}>
+            {tag.label}
+          </span>
         ))}
         {customTags.filter(t => person.tags.includes(t)).map(tag => (
-          <button
-            key={tag}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleTag(person.id, tag);
-            }}
-            className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 hover:opacity-75 transition-opacity"
-          >
-            {tag} ✕
-          </button>
+          <span key={tag} className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600">
+            {tag}
+          </span>
         ))}
-        {/* Add tag button */}
-        <div className="relative" ref={tagMenuRef}>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setTagMenuOpen(prev => !prev);
-            }}
-            className="text-xs px-2 py-0.5 rounded-full border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand hover:text-brand transition-colors"
-          >
-            + Tag
-          </button>
-          {tagMenuOpen && (
-            <div className="absolute top-full left-0 mt-1 z-20 bg-white border rounded-xl shadow-xl p-2 min-w-[140px]">
+        {!isBlockModeTarget && (
+          <div className="relative" ref={tagMenuRef}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setTagMenuOpen(prev => !prev);
+              }}
+              className="text-xs px-2 py-0.5 rounded-full border-2 border-dashed border-gray-300 text-gray-400 hover:border-brand hover:text-brand transition-colors"
+            >
+              + Tag
+            </button>
+            {tagMenuOpen && (
+              <div className="absolute top-full left-0 mt-1 z-20 bg-white border rounded-xl shadow-xl p-2 min-w-[140px]">
               {availableTags
                 .filter(t => !person.tags.includes(t))
                 .map(tag => (
@@ -160,6 +149,7 @@ export function PersonChip({
       </div>
 
       {/* Custom tag input */}
+      {!isBlockModeTarget && (
       <div className="mt-2 flex gap-1">
         <input
           type="text"
@@ -177,10 +167,11 @@ export function PersonChip({
           onClick={(e) => e.stopPropagation()}
         />
       </div>
+      )}
 
       {/* Block indicator */}
       {person.blockedWith.length > 0 && (
-        <div className="mt-1.5 text-xs text-red-500 font-medium">
+        <div className={`mt-1.5 text-xs text-red-500 font-medium ${isBlockModeTarget ? 'pointer-events-none' : ''}`}>
           🚫 {person.blockedWith.length} bloqueio(s)
         </div>
       )}

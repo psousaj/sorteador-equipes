@@ -380,26 +380,20 @@ export function HomeScreen() {
                       blockModePersonId !== null &&
                       (blockModePersonId === '__active__' || blockModePersonId !== person.id);
                     return (
-                      <div
+                      <PersonChip
                         key={person.id}
-                        className={`relative ${isBlockModeTarget ? 'cursor-pointer' : ''}`}
-                        onClick={() => isBlockModeTarget && handleBlockPersonClick(person.id)}
-                      >
-                        {isBlockModeTarget && (
-                          <div className="absolute inset-0 bg-red-500/5 rounded-xl border-2 border-dashed border-red-300 z-10 pointer-events-none" />
-                        )}
-                        <PersonChip
-                          person={person}
-                          index={idx}
-                          onGenderChange={handleGenderChange}
-                          onToggleTag={handleToggleTag}
-                          onRemove={(id) => handleRemovePerson(id, person.name)}
-                          onClickName={setSelectedPerson}
-                          availableTags={personTags}
-                          customTags={customTags}
-                          onAddCustomTag={handleAddCustomTag}
-                        />
-                      </div>
+                        person={person}
+                        index={idx}
+                        onGenderChange={handleGenderChange}
+                        onToggleTag={handleToggleTag}
+                        onRemove={(id) => handleRemovePerson(id, person.name)}
+                        onClickName={setSelectedPerson}
+                        availableTags={personTags}
+                        customTags={customTags}
+                        onAddCustomTag={handleAddCustomTag}
+                        isBlockModeTarget={isBlockModeTarget}
+                        onBlockSelect={handleBlockPersonClick}
+                      />
                     );
                   })}
                 </div>
