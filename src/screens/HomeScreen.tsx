@@ -29,9 +29,9 @@ export function HomeScreen() {
   const [editNameValue, setEditNameValue] = useState('');
   const [showBlockedPanel, setShowBlockedPanel] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const captainTooltipRef = useRef<HTMLDivElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null!);
+  const captainTooltipRef = useRef<HTMLDivElement>(null!);
+  const nameInputRef = useRef<HTMLInputElement>(null!);
 
   // Load custom tags from localStorage on mount
   useEffect(() => {

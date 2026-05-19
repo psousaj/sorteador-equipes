@@ -146,6 +146,7 @@ export function PersonChip({
             </div>
           )}
         </div>
+      )}
       </div>
 
       {/* Custom tag input */}
