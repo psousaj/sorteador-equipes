@@ -42,7 +42,8 @@ export interface GameConfig {
   setsEnabled: boolean;
   pointsToWin: number;      // pontos pra vencer o set
   margin: number;           // diferença mínima pra vencer (ex: 2 = deuce)
-  setsToWin: number;        // melhor de X sets
+  setsToWin: number;        // sets necessários pra vencer (derivado de totalSets)
+  totalSets: number;        // total de sets na partida
 
   // Timer (visual only)
   timerEnabled: boolean;
@@ -125,7 +126,8 @@ export function defaultGameConfig(): GameConfig {
     setsEnabled: false,
     pointsToWin: 10,
     margin: 2,
-    setsToWin: 3,
+    setsToWin: 2,
+    totalSets: 3,
     timerEnabled: false,
     timerDuration: 10,
     timerCountdown: false,

@@ -65,7 +65,7 @@ export function PersonChip({
       className={`
         relative group rounded-xl border-2 p-3 transition-all duration-200 select-none
         ${isBlockModeTarget
-          ? 'border-red-300 bg-red-50/30 cursor-pointer hover:shadow-md hover:border-red-400 hover:bg-red-50/60'
+          ? 'border-red-500 bg-red-100 cursor-pointer hover:shadow-md hover:bg-red-200 hover:border-red-600'
           : `${genderBorder} bg-white hover:shadow-md hover:border-brand-light`
         }
       `}
@@ -101,7 +101,7 @@ export function PersonChip({
       </div>
 
       {/* Tags */}
-      <div className={`flex flex-wrap gap-1.5 ${isBlockModeTarget ? 'pointer-events-none' : ''}`}>
+      <div className={`flex flex-wrap gap-1.5 ${isBlockModeTarget ? '' : ''}`}>
         {[...DEFAULT_TAGS.filter(t => person.tags.includes(t.value))].map(tag => (
           <span key={tag.value} className={`text-xs px-2 py-0.5 rounded-full font-medium ${tag.color}`}>
             {tag.label}
@@ -146,7 +146,7 @@ export function PersonChip({
             </div>
           )}
         </div>
-      )}
+        )}
       </div>
 
       {/* Custom tag input */}
@@ -172,7 +172,7 @@ export function PersonChip({
 
       {/* Block indicator */}
       {person.blockedWith.length > 0 && (
-        <div className={`mt-1.5 text-xs text-red-500 font-medium ${isBlockModeTarget ? 'pointer-events-none' : ''}`}>
+        <div className={`mt-1.5 text-xs text-red-500 font-medium ${isBlockModeTarget ? '' : ''}`}>
           🚫 {person.blockedWith.length} bloqueio(s)
         </div>
       )}

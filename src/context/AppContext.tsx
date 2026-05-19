@@ -2,7 +2,7 @@ import React, { createContext, useContext, useReducer, useCallback, useEffect } 
 import { v4 as uuidv4 } from 'uuid';
 import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair, GameConfig, GameSession, MatchResult } from '../types';
 import { defaultGameConfig, randomTeamEmoji } from '../types';
-import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs } from '../lib/storage';
+import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs, saveGameConfig, getGameConfig } from '../lib/storage';
 import { runDraw } from '../lib/sortAlgorithm';
 import { inferGender } from '../lib/genderInference';
 
@@ -89,6 +89,7 @@ type Action =
   | { type: 'UPDATE_GAME_CONFIG'; payload: Partial<GameConfig> }
   | { type: 'UPDATE_TEAM_INFO'; payload: { teamId: number; name?: string; emoji?: string } }
   | { type: 'END_MATCH' }
+  | { type: 'RESTART_MATCH' }
   | { type: 'CLOSE_GAME' };
 
 function reducer(state: AppState, action: Action): AppState {
@@ -713,6 +714,24 @@ function reducer(state: AppState, action: Action): AppState {
       };
     }
 
+    case 'RESTART_MATCH': {
+      const { game } = state;
+      return {
+        ...state,
+        game: {
+          ...game,
+          scores: [0, 0],
+          setScores1: [],
+          setScores2: [],
+          currentSet: 1,
+          wins: {},
+          matchHistory: [],
+          scoreHistory: [],
+          isActive: true,
+        },
+      };
+    }
+
     case 'CLOSE_GAME':
       return {
         ...state,
@@ -780,6 +799,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'SET_PEOPLE', payload: updatedPeople });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Load game config from localStorage on mount
+  useEffect(() => {
+    const saved = getGameConfig();
+    if (saved) {
+      dispatch({ type: 'UPDATE_GAME_CONFIG', payload: saved });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Save blocked pairs to localStorage whenever they change
   useEffect(() => {
     const pairs: BlockedPair[] = [];
@@ -802,6 +829,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     saveBlockedPairs(pairs);
   }, [state.people]);
+
+  // Save game config to localStorage whenever it changes
+  useEffect(() => {
+    if (state.game.isActive) {
+      saveGameConfig(state.game.config);
+    }
+  }, [state.game.config, state.game.isActive]);
 
   const parseNames = useCallback((raw: string) => {
     const names = raw

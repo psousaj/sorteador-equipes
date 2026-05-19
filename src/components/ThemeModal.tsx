@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import type { GameConfig } from '../types';
@@ -19,6 +18,12 @@ export function ThemeModal({ isOpen, onClose, config, onConfigChange }: Props) {
     }
   };
 
+  const adjustTimer = (delta: number) => {
+    const val = config.timerDuration + delta;
+    if (val < 1 || val > 60) return;
+    onConfigChange({ ...config, timerDuration: val });
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -37,7 +42,7 @@ export function ThemeModal({ isOpen, onClose, config, onConfigChange }: Props) {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-gray-800">🎨 Escolher tema</h2>
+              <h2 className="text-lg font-bold text-gray-800">📐 Exibição</h2>
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -47,7 +52,7 @@ export function ThemeModal({ isOpen, onClose, config, onConfigChange }: Props) {
             </div>
 
             {/* Toggle options */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-4">
               <ToggleButton
                 label="Orientação"
                 value={config.orientation === 'inverted' ? 'Invertido' : 'Normal'}
@@ -55,7 +60,7 @@ export function ThemeModal({ isOpen, onClose, config, onConfigChange }: Props) {
                 onClick={() => toggle('orientation')}
               />
               <ToggleButton
-                label="Escuro"
+                label="Fundo escuro"
                 value={config.darkTheme ? 'Ativado' : 'Desativado'}
                 active={config.darkTheme}
                 onClick={() => toggle('darkTheme')}
@@ -72,29 +77,43 @@ export function ThemeModal({ isOpen, onClose, config, onConfigChange }: Props) {
                 active={config.setsEnabled}
                 onClick={() => toggle('setsEnabled')}
               />
+              <ToggleButton
+                label="Vibração"
+                value={config.vibration ? 'Ativado' : 'Desativado'}
+                active={config.vibration}
+                onClick={() => toggle('vibration')}
+              />
+              <ToggleButton
+                label="Deslizar"
+                value={config.swipeToDecrease ? 'Ativado' : 'Desativado'}
+                active={config.swipeToDecrease}
+                onClick={() => toggle('swipeToDecrease')}
+              />
             </div>
 
-            {/* Preview do placar */}
-            <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-              <div className="flex h-24">
-                <div className="flex-1 bg-[#2979D0] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-white/80 text-xs font-semibold">
-                      {config.orientation === 'inverted' ? 'Time Vermelho' : 'Time Azul'}
-                    </div>
-                    <div className="text-white text-3xl font-black tabular-nums">10</div>
-                  </div>
-                </div>
-                <div className="flex-1 bg-[#C0392B] flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-white/80 text-xs font-semibold">
-                      {config.orientation === 'inverted' ? 'Time Azul' : 'Time Vermelho'}
-                    </div>
-                    <div className="text-white text-3xl font-black tabular-nums">7</div>
-                  </div>
+            {/* Timer duration — visible when timer is on */}
+            {config.timerEnabled && (
+              <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Duração (minutos)</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => adjustTimer(-1)}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm font-bold"
+                  >
+                    −
+                  </button>
+                  <span className="text-sm font-bold text-gray-800 w-8 text-center tabular-nums">
+                    {config.timerDuration}
+                  </span>
+                  <button
+                    onClick={() => adjustTimer(1)}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm font-bold"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
           </motion.div>
         </motion.div>
       )}

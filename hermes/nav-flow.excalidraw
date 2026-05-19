@@ -1,0 +1,399 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "hermes-agent",
+  "elements": [
+    {
+      "type": "text",
+      "id": "title",
+      "x": 350,
+      "y": 20,
+      "width": 500,
+      "height": 35,
+      "text": "Sorteador de Equipes — Fluxo de Navegação",
+      "fontSize": 28,
+      "fontFamily": 1,
+      "strokeColor": "#1e1e1e",
+      "originalText": "Sorteador de Equipes — Fluxo de Navegação",
+      "autoResize": true,
+      "textAlign": "center",
+      "verticalAlign": "middle"
+    },
+
+    {
+      "type": "text",
+      "id": "legend_title",
+      "x": 50,
+      "y": 780,
+      "width": 200,
+      "height": 25,
+      "text": "Legenda:",
+      "fontSize": 20,
+      "fontFamily": 1,
+      "strokeColor": "#1e1e1e",
+      "originalText": "Legenda:",
+      "autoResize": true
+    },
+    { "type": "rectangle", "id": "legend_screen", "x": 50, "y": 810, "width": 140, "height": 35,
+      "roundness": { "type": 3 }, "backgroundColor": "#a5d8ff", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_legend_screen", "type": "text" }] },
+    { "type": "text", "id": "t_legend_screen", "x": 55, "y": 815, "width": 130, "height": 25,
+      "text": "Tela", "fontSize": 18, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "legend_screen", "originalText": "Tela", "autoResize": true },
+    { "type": "text", "id": "legend_modal", "x": 50, "y": 855, "width": 200, "height": 20,
+      "text": "Retângulo tracejado = Modal/Overlay", "fontSize": 16, "fontFamily": 1,
+      "strokeColor": "#1e1e1e", "originalText": "Retângulo tracejado = Modal/Overlay", "autoResize": true },
+    { "type": "text", "id": "legend_future", "x": 50, "y": 880, "width": 200, "height": 20,
+      "text": "Cinza = Futuro / Stub", "fontSize": 16, "fontFamily": 1,
+      "strokeColor": "#868e96", "originalText": "Cinza = Futuro / Stub", "autoResize": true },
+
+    { "type": "text", "id": "legend_action",
+      "x": 300, "y": 810, "width": 400, "height": 20,
+      "text": "Setas com rótulo = ação do usuário ou transição automática",
+      "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "originalText": "Setas com rótulo = ação do usuário ou transição automática",
+      "autoResize": true
+    },
+
+    { "type": "text", "id": "legend_trigger",
+      "x": 300, "y": 840, "width": 400, "height": 20,
+      "text": "Rótulo em itálico = transição automática (sem ação do usuário)",
+      "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "originalText": "Rótulo em itálico = transição automática (sem ação do usuário)",
+      "autoResize": true
+    },
+
+    { "type": "text", "id": "legend_scope",
+      "x": 50, "y": 910, "width": 700, "height": 20,
+      "text": "Escopo deste plano: Módulo Jogo (telas Game, GameOver, GameConfig, GameMenu, Histórico Dropdown, Tema Modal)",
+      "fontSize": 16, "fontFamily": 1, "strokeColor": "#e67700",
+      "originalText": "Escopo deste plano: Módulo Jogo (telas Game, GameOver, GameConfig, GameMenu, Histórico Dropdown, Tema Modal)",
+      "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_home_anim",
+      "x": 500, "y": 155, "width": 0, "height": 50,
+      "points": [[0,0],[0,50]], "endArrowhead": "arrow",
+      "startBinding": { "elementId": "home", "fixedPoint": [0.5,1] },
+      "boundElements": [{ "id": "t_home_anim", "type": "text" }]
+    },
+    { "type": "text", "id": "t_home_anim", "x": 460, "y": 175, "width": 80, "height": 18,
+      "text": "Sortear", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_home_anim", "originalText": "Sortear", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_anim_result",
+      "x": 500, "y": 280, "width": 0, "height": 50,
+      "points": [[0,0],[0,50]], "endArrowhead": "arrow",
+      "startBinding": { "elementId": "anim", "fixedPoint": [0.5,1] },
+      "boundElements": [{ "id": "t_anim_result", "type": "text" }]
+    },
+    { "type": "text", "id": "t_anim_result", "x": 445, "y": 295, "width": 120, "height": 18,
+      "text": "animação fim", "fontSize": 16, "fontFamily": 1, "strokeColor": "#868e96",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_anim_result", "originalText": "animação fim", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_result_game",
+      "x": 500, "y": 405, "width": 0, "height": 50,
+      "points": [[0,0],[0,50]], "endArrowhead": "arrow",
+      "startBinding": { "elementId": "result", "fixedPoint": [0.5,1] },
+      "boundElements": [{ "id": "t_result_game", "type": "text" }]
+    },
+    { "type": "text", "id": "t_result_game", "x": 438, "y": 425, "width": 130, "height": 18,
+      "text": "Iniciar Partida", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_result_game", "originalText": "Iniciar Partida", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_result_home",
+      "x": 500, "y": 405, "width": -200, "height": -330,
+      "points": [[0,0],[-200,-280],[-200,-330]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "result", "fixedPoint": [0,0.5] },
+      "boundElements": [{ "id": "t_result_home", "type": "text" }]
+    },
+    { "type": "text", "id": "t_result_home", "x": 305, "y": 270, "width": 55, "height": 18,
+      "text": "Voltar", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_result_home", "originalText": "Voltar", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_game_over_auto",
+      "x": 770, "y": 520, "width": 0, "height": 50,
+      "points": [[0,0],[0,50]], "endArrowhead": "arrow",
+      "startBinding": { "elementId": "game", "fixedPoint": [0.5,1] },
+      "boundElements": [{ "id": "t_game_over_auto", "type": "text" }]
+    },
+    { "type": "text", "id": "t_game_over_auto", "x": 708, "y": 540, "width": 130, "height": 18,
+      "text": "fim da sessão", "fontSize": 16, "fontFamily": 1, "strokeColor": "#868e96",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_game_over_auto", "originalText": "fim da sessão", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_game_encerrar",
+      "x": 770, "y": 520, "width": -270, "height": 0,
+      "points": [[0,0],[-270,0]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "game", "fixedPoint": [0,0.5] },
+      "boundElements": [{ "id": "t_game_encerrar", "type": "text" }]
+    },
+    { "type": "text", "id": "t_game_encerrar", "x": 645, "y": 508, "width": 110, "height": 18,
+      "text": "Encerrar", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_game_encerrar", "originalText": "Encerrar", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_over_home",
+      "x": 500, "y": 640, "width": -210, "height": -350,
+      "points": [[0,0],[-210,-260],[-210,-350]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "gameover", "fixedPoint": [0,0.5] },
+      "boundElements": [{ "id": "t_over_home", "type": "text" }]
+    },
+    { "type": "text", "id": "t_over_home", "x": 300, "y": 470, "width": 85, "height": 18,
+      "text": "Início", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_over_home", "originalText": "Início", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_over_result",
+      "x": 540, "y": 655, "width": -40, "height": -170,
+      "points": [[0,0],[-40,-170]],
+      "endArrowhead": "arrow",
+      "boundElements": [{ "id": "t_over_result", "type": "text" }]
+    },
+    { "type": "text", "id": "t_over_result", "x": 470, "y": 558, "width": 140, "height": 18,
+      "text": "Ver Sorteio", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_over_result", "originalText": "Ver Sorteio", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_game_config",
+      "x": 770, "y": 470, "width": 130, "height": -20,
+      "points": [[0,0],[130,-20]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "game", "fixedPoint": [1,0.15] },
+      "boundElements": [{ "id": "t_game_config", "type": "text" }]
+    },
+    { "type": "text", "id": "t_game_config", "x": 800, "y": 440, "width": 60, "height": 18,
+      "text": "⚙️", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_game_config", "originalText": "⚙️", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_game_history",
+      "x": 770, "y": 500, "width": 130, "height": 0,
+      "points": [[0,0],[130,0]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "game", "fixedPoint": [1,0.5] },
+      "boundElements": [{ "id": "t_game_history", "type": "text" }]
+    },
+    { "type": "text", "id": "t_game_history", "x": 810, "y": 488, "width": 55, "height": 18,
+      "text": "📈", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_game_history", "originalText": "📈", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_game_tema",
+      "x": 770, "y": 530, "width": 130, "height": 40,
+      "points": [[0,0],[130,40]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "game", "fixedPoint": [1,0.7] },
+      "boundElements": [{ "id": "t_game_tema", "type": "text" }]
+    },
+    { "type": "text", "id": "t_game_tema", "x": 810, "y": 535, "width": 55, "height": 18,
+      "text": "⊞", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_game_tema", "originalText": "⊞", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_config_back",
+      "x": 900, "y": 440, "width": 0, "height": 80,
+      "points": [[0,0],[0,80]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "config_modal", "fixedPoint": [0.5,1] },
+      "boundElements": [{ "id": "t_config_back", "type": "text" }]
+    },
+    { "type": "text", "id": "t_config_back", "x": 855, "y": 465, "width": 90, "height": 18,
+      "text": "fechar", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_config_back", "originalText": "fechar", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_hist_back",
+      "x": 900, "y": 510, "width": 0, "height": 80,
+      "points": [[0,0],[0,80]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "hist_modal", "fixedPoint": [0.5,1] },
+      "boundElements": [{ "id": "t_hist_back", "type": "text" }]
+    },
+    { "type": "text", "id": "t_hist_back", "x": 860, "y": 535, "width": 80, "height": 18,
+      "text": "fechar", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_hist_back", "originalText": "fechar", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_tema_back",
+      "x": 900, "y": 590, "width": 0, "height": 50,
+      "points": [[0,0],[0,50]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "tema_modal", "fixedPoint": [0.5,1] },
+      "boundElements": [{ "id": "t_tema_back", "type": "text" }]
+    },
+    { "type": "text", "id": "t_tema_back", "x": 860, "y": 605, "width": 80, "height": 18,
+      "text": "fechar", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_tema_back", "originalText": "fechar", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_gameover_to_result",
+      "x": 500, "y": 640, "width": 240, "height": -200,
+      "points": [[0,0],[240,-200]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "gameover", "fixedPoint": [1,0.5] },
+      "boundElements": [{ "id": "t_gameover_to_result", "type": "text" }]
+    },
+    { "type": "text", "id": "t_gameover_to_result",
+      "x": 585, "y": 513, "width": 130, "height": 30,
+      "text": "fim da sessão\n(se ver Resultado)",
+      "fontSize": 14, "fontFamily": 1, "strokeColor": "#868e96",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_gameover_to_result", "originalText": "fim da sessão (se ver Resultado)", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_gameover_to_game",
+      "x": 460, "y": 640, "width": 0, "height": -50,
+      "points": [[0,0],[0,-50]],
+      "endArrowhead": "arrow",
+      "boundElements": [{ "id": "t_gameover_to_game", "type": "text" }]
+    },
+    { "type": "text", "id": "t_gameover_to_game",
+      "x": 280, "y": 605, "width": 130, "height": 18,
+      "text": "Nova Partida", "fontSize": 16, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_gameover_to_game", "originalText": "Nova Partida", "autoResize": true
+    },
+
+    { "type": "arrow", "id": "a_tournament",
+      "x": 500, "y": 405, "width": 240, "height": -100,
+      "points": [[0,0],[240,-80],[240,-100]],
+      "endArrowhead": "arrow",
+      "startBinding": { "elementId": "result", "fixedPoint": [1,0.15] },
+      "boundElements": [{ "id": "t_tournament", "type": "text" }]
+    },
+    { "type": "text", "id": "t_tournament", "x": 575, "y": 310, "width": 150, "height": 18,
+      "text": "Criar Torneio (futuro)", "fontSize": 16, "fontFamily": 1, "strokeColor": "#868e96",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "a_tournament", "originalText": "Criar Torneio (futuro)", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "home",
+      "x": 400, "y": 80, "width": 200, "height": 70,
+      "roundness": { "type": 3 }, "backgroundColor": "#a5d8ff", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_home", "type": "text" }, { "id": "a_home_anim", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_home", "x": 405, "y": 100, "width": 190, "height": 25,
+      "text": "🏠 HOME", "fontSize": 20, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "home", "originalText": "🏠 HOME", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "anim",
+      "x": 400, "y": 210, "width": 200, "height": 65,
+      "roundness": { "type": 3 }, "backgroundColor": "#d0bfff", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_anim", "type": "text" }, { "id": "a_home_anim", "type": "arrow" }, { "id": "a_anim_result", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_anim", "x": 405, "y": 230, "width": 190, "height": 25,
+      "text": "✨ ANIMAÇÃO", "fontSize": 18, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "anim", "originalText": "✨ ANIMAÇÃO", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "result",
+      "x": 400, "y": 335, "width": 200, "height": 65,
+      "roundness": { "type": 3 }, "backgroundColor": "#b2f2bb", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_result", "type": "text" }, { "id": "a_anim_result", "type": "arrow" }, { "id": "a_result_game", "type": "arrow" }, { "id": "a_result_home", "type": "arrow" }, { "id": "a_tournament", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_result", "x": 405, "y": 355, "width": 190, "height": 25,
+      "text": "📋 RESULTADO", "fontSize": 18, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "result", "originalText": "📋 RESULTADO", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "game",
+      "x": 640, "y": 460, "width": 250, "height": 55,
+      "roundness": { "type": 3 }, "backgroundColor": "#a5d8ff", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_game", "type": "text" }, { "id": "a_result_game", "type": "arrow" }, { "id": "a_game_over_auto", "type": "arrow" }, { "id": "a_game_encerrar", "type": "arrow" }, { "id": "a_game_config", "type": "arrow" }, { "id": "a_game_history", "type": "arrow" }, { "id": "a_game_tema", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_game", "x": 645, "y": 475, "width": 240, "height": 25,
+      "text": "🎮 GAME (placar)", "fontSize": 18, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "game", "originalText": "🎮 GAME (placar)", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "gameover",
+      "x": 330, "y": 585, "width": 240, "height": 55,
+      "roundness": { "type": 3 }, "backgroundColor": "#ffd8a8", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_gameover", "type": "text" }, { "id": "a_game_over_auto", "type": "arrow" }, { "id": "a_game_encerrar", "type": "arrow" }, { "id": "a_over_home", "type": "arrow" }, { "id": "a_over_result", "type": "arrow" }, { "id": "a_gameover_to_result", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_gameover", "x": 335, "y": 600, "width": 230, "height": 25,
+      "text": "🏁 GAME OVER", "fontSize": 18, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "gameover", "originalText": "🏁 GAME OVER", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "config_modal",
+      "x": 840, "y": 380, "width": 130, "height": 55,
+      "roundness": { "type": 3 }, "strokeStyle": "dashed", "backgroundColor": "#fff3bf", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_config_modal", "type": "text" }, { "id": "a_game_config", "type": "arrow" }, { "id": "a_config_back", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_config_modal", "x": 845, "y": 390, "width": 120, "height": 35,
+      "text": "⚙️ CONFIG\n(modal)", "fontSize": 14, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "config_modal", "originalText": "⚙️ CONFIG (modal)", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "hist_modal",
+      "x": 840, "y": 460, "width": 130, "height": 50,
+      "roundness": { "type": 3 }, "strokeStyle": "dashed", "backgroundColor": "#fff3bf", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_hist_modal", "type": "text" }, { "id": "a_game_history", "type": "arrow" }, { "id": "a_hist_back", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_hist_modal", "x": 845, "y": 470, "width": 120, "height": 30,
+      "text": "📈 HISTÓRICO\n(dropdown)", "fontSize": 13, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "hist_modal", "originalText": "📈 HISTÓRICO (dropdown)", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "tema_modal",
+      "x": 840, "y": 530, "width": 130, "height": 55,
+      "roundness": { "type": 3 }, "strokeStyle": "dashed", "backgroundColor": "#fff3bf", "fillStyle": "solid",
+      "boundElements": [{ "id": "t_tema_modal", "type": "text" }, { "id": "a_game_tema", "type": "arrow" }, { "id": "a_tema_back", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_tema_modal", "x": 845, "y": 538, "width": 120, "height": 35,
+      "text": "⊞ TEMA\n(modal)", "fontSize": 14, "fontFamily": 1, "strokeColor": "#1e1e1e",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "tema_modal", "originalText": "⊞ TEMA (modal)", "autoResize": true
+    },
+
+    { "type": "rectangle", "id": "tournament",
+      "x": 640, "y": 230, "width": 200, "height": 55,
+      "roundness": { "type": 3 }, "backgroundColor": "#dee2e6", "fillStyle": "solid",
+      "strokeColor": "#868e96",
+      "boundElements": [{ "id": "t_tournament_text", "type": "text" }, { "id": "a_tournament", "type": "arrow" }]
+    },
+    { "type": "text", "id": "t_tournament_text",
+      "x": 645, "y": 245, "width": 190, "height": 25,
+      "text": "🏆 TORNEIO (futuro)", "fontSize": 16, "fontFamily": 1,
+      "strokeColor": "#868e96",
+      "textAlign": "center", "verticalAlign": "middle",
+      "containerId": "tournament", "originalText": "🏆 TORNEIO (futuro)", "autoResize": true
+    }
+
+  ],
+  "appState": {
+    "viewBackgroundColor": "#ffffff"
+  }
+}

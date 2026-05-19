@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, RotateCcw } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import type { EmojiClickData } from 'emoji-picker-react';
 import type { GameConfig, Team } from '../types';
 import { defaultGameConfig } from '../types';
+import { getGameConfig, saveGameConfig } from '../lib/storage';
 
 interface Props {
   isOpen: boolean;
@@ -28,14 +29,35 @@ export function GameConfigModal({
   const [editingTeamIndex, setEditingTeamIndex] = useState<number | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = getGameConfig();
+    if (saved) {
+      onConfigChange(saved);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Save to localStorage on every change
+  useEffect(() => {
+    saveGameConfig(config);
+  }, [config]);
+
+  const totalSets = config.totalSets || 3;
+  const derivedSetsToWin = Math.floor(totalSets / 2) + 1;
+
   const updateConfig = (partial: Partial<GameConfig>) => {
     onConfigChange({ ...config, ...partial });
   };
 
-  const adjust = (key: 'pointsToWin' | 'margin' | 'setsToWin', delta: number) => {
-    const val = config[key] + delta;
+  const adjust = (key: 'pointsToWin' | 'margin' | 'setsToWin' | 'totalSets', delta: number) => {
+    const val = (key === 'totalSets' ? totalSets : config[key]) + delta;
     if (val < 1) return;
-    updateConfig({ [key]: val });
+    if (key === 'totalSets') {
+      if (val < 3) return;
+      updateConfig({ totalSets: val, setsToWin: Math.floor(val / 2) + 1 });
+    } else {
+      updateConfig({ [key]: val });
+    }
   };
 
   const handleReset = () => {
@@ -116,22 +138,6 @@ export function GameConfigModal({
                   >
                     ↗
                   </button>
-                </SettingRow>
-
-                {/* Swipe to decrease */}
-                <SettingRow icon="☝" label="Deslize para diminuir o placar">
-                  <Checkbox
-                    checked={config.swipeToDecrease}
-                    onChange={v => updateConfig({ swipeToDecrease: v })}
-                  />
-                </SettingRow>
-
-                {/* Vibration */}
-                <SettingRow icon="📳" label="Vibração na mudança de pontuação">
-                  <Checkbox
-                    checked={config.vibration}
-                    onChange={v => updateConfig({ vibration: v })}
-                  />
                 </SettingRow>
 
                 {/* Ask set winner */}
@@ -235,9 +241,12 @@ export function GameConfigModal({
                   <Stepper value={config.margin} onDecrease={() => adjust('margin', -1)} onIncrease={() => adjust('margin', 1)} />
                 </SettingRow>
 
-                <SettingRow icon="🏆" label="Sets para vencer a partida">
-                  <Stepper value={config.setsToWin} onDecrease={() => adjust('setsToWin', -1)} onIncrease={() => adjust('setsToWin', 1)} />
+                <SettingRow icon="🏆" label={`Total de sets na partida`}>
+                  <Stepper value={totalSets} onDecrease={() => adjust('totalSets', -1)} onIncrease={() => adjust('totalSets', 1)} />
                 </SettingRow>
+                <div className="text-xs text-gray-500 pl-8 -mt-2">
+                  Vence quem fizer {derivedSetsToWin} sets
+                </div>
 
                 {/* CRONÔMETRO */}
                 <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide pt-2">Cronômetro</h3>

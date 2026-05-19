@@ -5,6 +5,7 @@ import { MenuButton } from '../components/MenuButton';
 import { HistoryDropdown } from '../components/HistoryDropdown';
 import { ThemeModal } from '../components/ThemeModal';
 import { GameConfigModal } from '../components/GameConfigModal';
+import confetti from 'canvas-confetti';
 
 export function GameScreen() {
   const { state, dispatch } = useApp();
@@ -13,6 +14,7 @@ export function GameScreen() {
   const [showHistory, setShowHistory] = useState(false);
   const [showTheme, setShowTheme] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [celebrated, setCelebrated] = useState(false);
 
   // Touch positions for swipe detection
   const touchStartY = useRef<number | null>(null);
@@ -69,6 +71,18 @@ export function GameScreen() {
   const rightSide = isInverted ? 'team1' : 'team2';
   const leftWins = isInverted ? getTeamWins(team2.id) : getTeamWins(team1.id);
   const rightWins = isInverted ? getTeamWins(team1.id) : getTeamWins(team2.id);
+
+  useEffect(() => {
+    if (leftScore >= game.config.pointsToWin || rightScore >= game.config.pointsToWin) {
+      if (!celebrated) {
+        setCelebrated(true);
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+        new Audio("https://www.soundjay.com/misc/sounds/applause-1.mp3").play();
+      }
+    } else {
+      setCelebrated(false);
+    }
+  }, [leftScore, rightScore, game.config.pointsToWin, celebrated]);
 
   const handleConfigChange = useCallback((config: typeof game.config) => {
     dispatch({ type: 'UPDATE_GAME_CONFIG', payload: config });
@@ -148,14 +162,12 @@ export function GameScreen() {
             </div>
           )}
 
-          <div className="grid grid-cols-4 gap-1.5">
-            <MenuButton icon="➕" label="Pontuar" />
+          <div className="grid grid-cols-3 gap-1.5">
+            <MenuButton icon="⏪" label="Reiniciar" onClick={() => dispatch({ type: 'RESTART_MATCH' })} />
             <MenuButton icon="↩" label="Desfazer" onClick={() => dispatch({ type: 'UNDO_LAST_POINT' })} disabled={game.scoreHistory.length === 0} />
             <MenuButton icon="⇄" label="Trocar lados" onClick={() => dispatch({ type: 'SWAP_SIDES' })} />
             <MenuButton icon="📈" label="Histórico" onClick={() => setShowHistory(true)} />
-            <MenuButton icon="⊞" label="Tema" onClick={() => setShowTheme(true)} />
-            <MenuButton icon="🖥" label="Tela cheia" disabled />
-            <MenuButton icon="⭐" label="Destaque" />
+            <MenuButton icon="📐" label="Exibição" onClick={() => setShowTheme(true)} />
             <MenuButton icon="⚙️" label="Configurações" onClick={() => setShowConfig(true)} />
           </div>
 
