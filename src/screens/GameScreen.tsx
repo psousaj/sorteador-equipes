@@ -140,7 +140,7 @@ export function GameScreen() {
         </div>
 
         {/* Divider / Center actions */}
-        <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2 ${isDark ? 'bg-gray-900/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-3 py-3 shadow-xl`}>
+        <div className={`absolute left-1/2 -translate-x-1/2 bottom-8 z-10 flex flex-col items-center gap-2 ${isDark ? 'bg-gray-900/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-3 py-3 shadow-xl`}>
           {/* Set score between teams */}
           {game.config.setsEnabled && game.currentSet > 1 && (
             <div className="text-xs font-bold text-gray-500 mb-1 tabular-nums">
