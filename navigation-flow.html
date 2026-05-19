@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorteador — Arquitetura de Navegação</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020617;font-family:'JetBrains Mono',monospace;display:flex;justify-content:center;padding:40px 20px}
+.diagram-container{max-width:1200px;width:100%}
+.header-card{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border:1px solid #334155;border-radius:16px;padding:24px 32px;margin-bottom:32px}
+.header-card h1{font-size:20px;color:#f1f5f9;font-weight:700;display:flex;align-items:center;gap:12px}
+.header-card h1 .pulse{width:10px;height:10px;border-radius:50%;background:#22d3ee;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.header-card p{color:#94a3b8;font-size:11px;margin-top:8px;line-height:1.6}
+svg{width:100%;height:auto;background:#020617;border-radius:16px;border:1px solid #334155}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
+.card{background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border:1px solid #334155;border-radius:12px;padding:20px}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.card-dot{width:8px;height:8px;border-radius:50%}
+.card-dot.cyan{background:#22d3ee;box-shadow:0 0 8px #22d3ee44}
+.card-dot.emerald{background:#34d399;box-shadow:0 0 8px #34d39944}
+.card-dot.violet{background:#a78bfa;box-shadow:0 0 8px #a78bfa44}
+.card h3{font-size:13px;color:#f1f5f9;font-weight:600}
+.card ul{list-style:none;padding:0}
+.card li{font-size:10px;color:#94a3b8;padding:3px 0;line-height:1.5}
+.legend{display:flex;gap:24px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:10px;color:#94a3b8}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+.legend-dot.cyan{background:rgba(8,51,68,.6);border:1.5px solid #22d3ee}
+.legend-dot.emerald{background:rgba(6,78,59,.6);border:1.5px solid #34d399}
+.legend-dot.violet{background:rgba(76,29,149,.6);border:1.5px solid #a78bfa}
+.legend-dot.amber{background:rgba(120,53,15,.5);border:1.5px solid #fbbf24}
+.legend-dot.rose{background:rgba(136,19,55,.5);border:1.5px solid #fb7185}
+.legend-dot.orange{background:rgba(251,146,60,.4);border:1.5px solid #fb923c}
+.footer{text-align:center;margin-top:24px;font-size:9px;color:#475569}
+</style>
+</head>
+<body>
+<div class="diagram-container">
+<div class="header-card">
+  <h1><span class="pulse"></span>Sorteador de Equipes — Navegação &amp; Fluxo</h1>
+  <p>Arquitetura das telas, transições e integração entre os módulos. Features marcadas com <strong style="color:#fbbf24;">★</strong> são backlog (NEX-84 a NEX-88).</p>
+</div>
+
+<svg viewBox="0 0 1100 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrow-back" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#fb7185"/>
+    </marker>
+  </defs>
+
+  <rect width="1100" height="820" fill="url(#grid)"/>
+
+  <!-- === TÍTULO === -->
+  <text x="550" y="30" text-anchor="middle" fill="#f1f5f9" font-size="13" font-weight="700">LINHA DO TEMPO DO USUÁRIO</text>
+  <text x="550" y="45" text-anchor="middle" fill="#64748b" font-size="9">(cada card é uma tela, setas são transições)</text>
+
+  <!-- === FASE 1: SETUP === -->
+  <text x="550" y="72" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">① SETUP — Montagem dos Times</text>
+
+  <!-- Caixa: SETUP -->
+  <rect x="30" y="85" width="1040" height="130" rx="10" fill="rgba(8,51,68,.12)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="6,3"/>
+
+  <!-- Tela: Home / Sorteio -->
+  <rect x="55" y="100" width="180" height="100" rx="8" fill="rgba(8,51,68,.5)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="145" y="125" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="600">🏠 HOME</text>
+  <text x="145" y="140" text-anchor="middle" fill="#cbd5e1" font-size="8">Novo Sorteio</text>
+  <text x="145" y="155" text-anchor="middle" fill="#94a3b8" font-size="7">Pessoas + Tags + Bloqueios</text>
+  <text x="145" y="167" text-anchor="middle" fill="#94a3b8" font-size="7">Regras de distribuição</text>
+  <text x="145" y="179" text-anchor="middle" fill="#94a3b8" font-size="7">Capitão + Tamanho time</text>
+  <text x="145" y="191" text-anchor="middle" fill="#fbbf24" font-size="7">★ Regras de jogo</text>
+
+  <!-- Seta Home → Animação -->
+  <line x1="235" y1="150" x2="290" y2="150" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Tela: Animação -->
+  <rect x="295" y="100" width="150" height="100" rx="8" fill="rgba(8,51,68,.4)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="370" y="130" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="600">✨ ANIMAÇÃO</text>
+  <text x="370" y="148" text-anchor="middle" fill="#cbd5e1" font-size="8">Sorteio animado</text>
+  <text x="370" y="163" text-anchor="middle" fill="#94a3b8" font-size="7">(cards girando)</text>
+  <text x="370" y="178" text-anchor="middle" fill="#94a3b8" font-size="7">2s automático</text>
+
+  <!-- Seta Animação → Resultado -->
+  <line x1="445" y1="150" x2="500" y2="150" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Tela: Resultado -->
+  <rect x="505" y="100" width="200" height="100" rx="8" fill="rgba(8,51,68,.5)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="605" y="125" text-anchor="middle" fill="#22d3ee" font-size="10" font-weight="600">📋 RESULTADO</text>
+  <text x="605" y="142" text-anchor="middle" fill="#cbd5e1" font-size="8">Times com capitães</text>
+  <text x="605" y="157" text-anchor="middle" fill="#94a3b8" font-size="7">Novo sorteio ou jogar</text>
+  <text x="605" y="172" text-anchor="middle" fill="#fbbf24" font-size="7">★ Botão "Iniciar partida"</text>
+
+  <!-- Seta Resultado → Home (novo sorteio) -->
+  <path d="M 505 130 L 290 130" fill="none" stroke="#fb7185" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-back)"/>
+  <text x="370" y="126" text-anchor="middle" fill="#fb7185" font-size="7">"Novo sorteio"</text>
+
+  <!-- === FASE 2: JOGO === -->
+  <text x="550" y="240" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">② JOGO — Partidas &amp; Campeonato</text>
+
+  <!-- Caixa: JOGO -->
+  <rect x="30" y="255" width="1040" height="230" rx="10" fill="rgba(6,78,59,.12)" stroke="#34d399" stroke-width="1" stroke-dasharray="6,3"/>
+
+  <!-- Seta Resultado → Game -->
+  <line x1="605" y1="200" x2="605" y2="270" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+  <text x="625" y="235" fill="#34d399" font-size="8">"Iniciar partida" ★</text>
+
+  <!-- Tela: GAME (placar + timer) -->
+  <rect x="55" y="275" width="280" height="190" rx="8" fill="rgba(6,78,59,.5)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="195" y="300" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">⚔️ GAME (Partida) ★</text>
+  <text x="195" y="318" text-anchor="middle" fill="#cbd5e1" font-size="8">Placar ao vivo</text>
+  <text x="195" y="335" text-anchor="middle" fill="#94a3b8" font-size="7">Time A 3 — 2 Time B</text>
+  <line x1="75" y1="345" x2="315" y2="345" stroke="#334155" stroke-width=".5"/>
+  <text x="195" y="360" text-anchor="middle" fill="#94a3b8" font-size="7">⏱️ Cronômetro regressivo ★</text>
+  <text x="195" y="375" text-anchor="middle" fill="#94a3b8" font-size="7">🔄 Ordem de vez ★</text>
+  <text x="195" y="390" text-anchor="middle" fill="#94a3b8" font-size="7">⚙️ Regras ativas ★</text>
+  <text x="195" y="408" text-anchor="middle" fill="#fbbf24" font-size="7">"Ganhou 2 sai" / "Ganha a vez"</text>
+  <text x="195" y="425" text-anchor="middle" fill="#94a3b8" font-size="7">Botões: +1 gol / Encerrar</text>
+
+  <!-- Seta Game → End Match -->
+  <line x1="335" y1="370" x2="400" y2="370" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+  <text x="367" y="388" text-anchor="middle" fill="#34d399" font-size="7">"Encerrar</text>
+  <text x="367" y="399" text-anchor="middle" fill="#34d399" font-size="7">partida"</text>
+
+  <!-- Tela: Fim de partida -->
+  <rect x="405" y="275" width="200" height="190" rx="8" fill="rgba(6,78,59,.4)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="505" y="300" text-anchor="middle" fill="#34d399" font-size="10" font-weight="600">🏁 FIM PARTIDA ★</text>
+  <text x="505" y="320" text-anchor="middle" fill="#cbd5e1" font-size="8">Placar final</text>
+  <text x="505" y="340" text-anchor="middle" fill="#94a3b8" font-size="7">Time A 5 — 3 Time B 🏆</text>
+  <line x1="425" y1="350" x2="585" y2="350" stroke="#334155" stroke-width=".5"/>
+  <text x="505" y="368" text-anchor="middle" fill="#94a3b8" font-size="7">Próxima partida</text>
+  <text x="505" y="383" text-anchor="middle" fill="#94a3b8" font-size="7">Novo sorteio</text>
+  <text x="505" y="398" text-anchor="middle" fill="#94a3b8" font-size="7">Ver histórico</text>
+  <text x="505" y="416" text-anchor="middle" fill="#fbbf24" font-size="7">★ Próximo jogo (rodízio)</text>
+
+  <!-- Seta: Próximo jogo → Game (loop) -->
+  <path d="M 405 330 L 340 330" fill="none" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-cyan)"/>
+  <text x="372" y="325" text-anchor="middle" fill="#34d399" font-size="7">"Próx."</text>
+
+  <!-- Seta: Fim → Home (novo sorteio) -->
+  <path d="M 405 290 L 240 250" fill="none" stroke="#fb7185" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-back)"/>
+  <text x="290" y="268" fill="#fb7185" font-size="7">"Novo sorteio"</text>
+
+  <!-- === MODO TORNEIO === -->
+  <text x="750" y="240" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">③ TORNEIO ★</text>
+  <rect x="640" y="255" width="430" height="230" rx="10" fill="rgba(120,53,15,.12)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="6,3"/>
+
+  <!-- Seta Home → Torneio Config -->
+  <path d="M 145 200 L 770 270" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <rect x="660" y="275" width="200" height="190" rx="8" fill="rgba(120,53,15,.4)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="760" y="300" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600">🏆 TORNEIO ★</text>
+  <text x="760" y="320" text-anchor="middle" fill="#cbd5e1" font-size="8">Chaveamento</text>
+  <text x="760" y="340" text-anchor="middle" fill="#94a3b8" font-size="7">Semifinal 1: A vs B</text>
+  <text x="760" y="355" text-anchor="middle" fill="#94a3b8" font-size="7">Semifinal 2: C vs D</text>
+  <text x="760" y="370" text-anchor="middle" fill="#94a3b8" font-size="7">Final: Vencedor ⚔️</text>
+  <line x1="680" y1="380" x2="840" y2="380" stroke="#334155" stroke-width=".5"/>
+  <text x="760" y="398" text-anchor="middle" fill="#94a3b8" font-size="7">Avançar fase automático</text>
+  <text x="760" y="415" text-anchor="middle" fill="#94a3b8" font-size="7">Fase de grupos ★</text>
+
+  <!-- Seta Torneio → Game -->
+  <line x1="660" y1="370" x2="335" y2="370" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="500" y="358" text-anchor="middle" fill="#fbbf24" font-size="7">Cada jogo abre partida</text>
+
+  <!-- === HISTÓRICO === -->
+  <text x="200" y="510" text-anchor="middle" fill="#a78bfa" font-size="11" font-weight="600">④ HISTÓRICO &amp; ESTATÍSTICAS</text>
+  <rect x="30" y="525" width="640" height="120" rx="10" fill="rgba(76,29,149,.12)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="6,3"/>
+
+  <!-- Seta Home → Histórico -->
+  <path d="M 605 191 L 605 520" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="625" y="380" fill="#a78bfa" font-size="8">"Histórico"</text>
+
+  <!-- Seta Fim → Histórico -->
+  <path d="M 505 465 L 505 520" fill="none" stroke="#a78bfa" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <rect x="55" y="540" width="180" height="90" rx="8" fill="rgba(76,29,149,.5)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="145" y="565" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">📜 HISTÓRICO</text>
+  <text x="145" y="585" text-anchor="middle" fill="#cbd5e1" font-size="8">Partidas anteriores</text>
+  <text x="145" y="600" text-anchor="middle" fill="#94a3b8" font-size="7">Data, times, placar</text>
+  <text x="145" y="615" text-anchor="middle" fill="#94a3b8" font-size="7">Clique pra ver detalhes</text>
+
+  <!-- Seta Histórico → Detalhe -->
+  <line x1="235" y1="585" x2="300" y2="585" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="305" y="540" width="200" height="90" rx="8" fill="rgba(76,29,149,.4)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="405" y="565" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="600">📊 DETALHE ★</text>
+  <text x="405" y="585" text-anchor="middle" fill="#cbd5e1" font-size="8">Partida completa</text>
+  <text x="405" y="600" text-anchor="middle" fill="#94a3b8" font-size="7">Times + placar + tags</text>
+  <text x="405" y="615" text-anchor="middle" fill="#94a3b8" font-size="7">Aproveitamento jogadores</text>
+
+  <!-- Seta Histórico → Back -->
+  <path d="M 145 630 L 145 660" fill="none" stroke="#fb7185" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-back)"/>
+
+  <!-- === STORAGE === -->
+  <rect x="540" y="540" width="200" height="90" rx="8" fill="rgba(251,146,60,.2)" stroke="#fb923c" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <text x="640" y="565" text-anchor="middle" fill="#fb923c" font-size="10" font-weight="600">💾 PERSISTÊNCIA</text>
+  <text x="640" y="585" text-anchor="middle" fill="#cbd5e1" font-size="8">localStorage</text>
+  <text x="640" y="600" text-anchor="middle" fill="#94a3b8" font-size="7">Tags / Bloqueios / Config</text>
+  <text x="640" y="615" text-anchor="middle" fill="#94a3b8" font-size="7">Histórico de partidas ★</text>
+
+  <!-- === FASE DOIS: Data Flow === -->
+  <text x="550" y="670" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600">⑤ DATA FLOW — Estado Compartilhado</text>
+  <rect x="30" y="685" width="1040" height="100" rx="10" fill="rgba(30,41,59,.15)" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6,3"/>
+
+  <rect x="55" y="700" width="240" height="70" rx="6" fill="rgba(8,51,68,.5)" stroke="#22d3ee" stroke-width="1"/>
+  <text x="175" y="722" text-anchor="middle" fill="#22d3ee" font-size="9" font-weight="600">🧩 AppContext (atual)</text>
+  <text x="175" y="738" text-anchor="middle" fill="#94a3b8" font-size="7">people, rules, config, tags</text>
+  <text x="175" y="753" text-anchor="middle" fill="#94a3b8" font-size="7">blockedWith, drawError</text>
+
+  <rect x="350" y="700" width="240" height="70" rx="6" fill="rgba(6,78,59,.5)" stroke="#34d399" stroke-width="1"/>
+  <text x="470" y="722" text-anchor="middle" fill="#34d399" font-size="9" font-weight="600">🧩 GameContext ★ (novo)</text>
+  <text x="470" y="738" text-anchor="middle" fill="#94a3b8" font-size="7">placar, ordem vez, turno</text>
+  <text x="470" y="753" text-anchor="middle" fill="#94a3b8" font-size="7">cronômetro, regras jogo</text>
+
+  <rect x="645" y="700" width="240" height="70" rx="6" fill="rgba(120,53,15,.5)" stroke="#fbbf24" stroke-width="1"/>
+  <text x="765" y="722" text-anchor="middle" fill="#fbbf24" font-size="9" font-weight="600">🧩 TournamentContext ★</text>
+  <text x="765" y="738" text-anchor="middle" fill="#94a3b8" font-size="7">chaveamento, fases</text>
+  <text x="765" y="753" text-anchor="middle" fill="#94a3b8" font-size="7">partidas do torneio</text>
+
+  <!-- Legend -->
+  <g transform="translate(200, 795)">
+    <rect x="0" y="-12" width="700" height="24" rx="4" fill="#0f172a" stroke="#334155" stroke-width=".5"/>
+    <circle cx="20" cy="0" r="4" fill="#22d3ee"/><text x="28" y="3" fill="#94a3b8" font-size="8">Setup / Sorteio</text>
+    <circle cx="150" cy="0" r="4" fill="#34d399"/><text x="158" y="3" fill="#94a3b8" font-size="8">Partida / Jogo</text>
+    <circle cx="290" cy="0" r="4" fill="#fbbf24"/><text x="298" y="3" fill="#94a3b8" font-size="8">Torneio</text>
+    <circle cx="420" cy="0" r="4" fill="#a78bfa"/><text x="428" y="3" fill="#94a3b8" font-size="8">Histórico</text>
+    <circle cx="560" cy="0" r="4" fill="#fb923c"/><text x="568" y="3" fill="#94a3b8" font-size="8">Persistência</text>
+  </g>
+</svg>
+
+<div class="info-grid">
+  <div class="card">
+    <div class="card-header"><div class="card-dot cyan"></div><h3>Setup (existente)</h3></div>
+    <ul>
+      <li>• HomeScreen: adicionar pessoas, tags, bloqueios</li>
+      <li>• Config: tamanho time, regras distribuição, capitão</li>
+      <li>• Sorteio: animação + resultado com times</li>
+      <li>• Histórico: sorteios anteriores salvos</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-dot emerald"></div><h3>Game (★ novo contexto)</h3></div>
+    <ul>
+      <li>• GameContext: placar, ordem vez, cronômetro</li>
+      <li>• Tela Game: scoreboard + timer + botões de ação</li>
+      <li>• Tela Fim Partida: resultado + próximo jogo</li>
+      <li>• Regras ativas: "ganhou 2 sai", "ganha a vez"</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-dot amber"></div><h3>Torneio (★ futuro)</h3></div>
+    <ul>
+      <li>• TournamentContext: chaveamento + fases</li>
+      <li>• Tela Torneio: bracket visual</li>
+      <li>• Cada partida reusa o fluxo Game</li>
+      <li>• Fase de grupos + final + 3º lugar</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">Sorteador de Equipes — Fluxo de Navegação v1 &bull; ⚡ Features marcadas com ★ são backlog</div>
+</div>
+</body>
+</html>

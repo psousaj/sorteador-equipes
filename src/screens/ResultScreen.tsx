@@ -1,13 +1,20 @@
 import { useState } from 'react';
-import { Copy, Check, Shuffle, ArrowLeft, Share2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Copy, Check, Shuffle, ArrowLeft, Share2, Play, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { TeamCard } from '../components/TeamCard';
+import type { GameConfig } from '../types';
 
 export function ResultScreen() {
   const { state, dispatch, startDraw } = useApp();
   const { currentResult } = state;
   const [copied, setCopied] = useState(false);
+  const [showGameModal, setShowGameModal] = useState(false);
+  const [gameConfig, setGameConfig] = useState<GameConfig>({
+    pointsToWin: 5,
+    winLimit: 2,
+    deuce: true,
+  });
 
   if (!currentResult) return null;
 
@@ -145,7 +152,101 @@ export function ResultScreen() {
             <Shuffle size={18} />
             Sortear de novo
           </button>
+
+          <button
+            onClick={() => setShowGameModal(true)}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-xl transition-all shadow-md"
+          >
+            <Play size={18} />
+            Iniciar Partida
+          </button>
         </motion.div>
+
+        {/* Game Config Modal */}
+        <AnimatePresence>
+          {showGameModal && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowGameModal(false)}
+            >
+              <motion.div
+                className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-display font-bold text-gray-800">⚙️ Configurar Partida</h2>
+                  <button
+                    onClick={() => setShowGameModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Pontos para vencer
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      value={gameConfig.pointsToWin}
+                      onChange={e => setGameConfig(prev => ({ ...prev, pointsToWin: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-brand focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Limite de vitórias (sai com X)
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={gameConfig.winLimit}
+                      onChange={e => setGameConfig(prev => ({ ...prev, winLimit: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-brand focus:border-transparent"
+                    />
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={gameConfig.deuce}
+                      onChange={e => setGameConfig(prev => ({ ...prev, deuce: e.target.checked }))}
+                      className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Deuce (diferença de 2 pontos)</span>
+                  </label>
+                </div>
+
+                <button
+                  onClick={() => {
+                    dispatch({
+                      type: 'START_GAME',
+                      payload: { config: gameConfig, teams: currentResult.teams },
+                    });
+                    dispatch({ type: 'SET_SCREEN', payload: 'game' });
+                    setShowGameModal(false);
+                  }}
+                  className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-xl transition-all shadow-md"
+                >
+                  <Play size={18} />
+                  Começar!
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Copy preview */}
         <motion.div

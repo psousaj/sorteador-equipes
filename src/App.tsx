@@ -3,6 +3,8 @@ import { HomeScreen } from './screens/HomeScreen';
 import { AnimationScreen } from './screens/AnimationScreen';
 import { ResultScreen } from './screens/ResultScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
+import { GameScreen } from './screens/GameScreen';
+import { GameOverScreen } from './screens/GameOverScreen';
 
 function ScreenRouter() {
   const { state } = useApp();
@@ -16,6 +18,10 @@ function ScreenRouter() {
       return <ResultScreen />;
     case 'history':
       return <HistoryScreen />;
+    case 'game':
+      return <GameScreen />;
+    case 'gameover':
+      return <GameOverScreen />;
     default:
       return <HomeScreen />;
   }

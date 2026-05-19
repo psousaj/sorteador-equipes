@@ -35,7 +35,35 @@ export interface DrawResult {
   allPeople: Person[];
 }
 
-export type Screen = 'home' | 'animation' | 'result' | 'history';
+export interface GameConfig {
+  pointsToWin: number;
+  winLimit: number;
+  deuce: boolean;
+}
+
+export interface MatchResult {
+  id: string;
+  team1Id: number;
+  team2Id: number;
+  team1Name: string;
+  team2Name: string;
+  score1: number;
+  score2: number;
+  winner: 'team1' | 'team2';
+}
+
+export interface GameSession {
+  isActive: boolean;
+  config: GameConfig;
+  allTeams: Team[];
+  queue: number[];         // team IDs waiting
+  playing: [number, number] | null;  // team IDs playing now
+  scores: [number, number];
+  wins: Record<number, number>;   // teamId -> wins
+  matchHistory: MatchResult[];
+}
+
+export type Screen = 'home' | 'animation' | 'result' | 'history' | 'game' | 'gameover';
 
 export type GenderOption = 'male' | 'female' | 'unknown';
 
