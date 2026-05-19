@@ -1,11 +1,22 @@
-import { ChevronLeft, Trophy, Flag } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useApp } from '../context/AppContext';
-import { useEffect } from 'react';
+import { MenuButton } from '../components/MenuButton';
+import { HistoryDropdown } from '../components/HistoryDropdown';
+import { ThemeModal } from '../components/ThemeModal';
+import { GameConfigModal } from '../components/GameConfigModal';
 
 export function GameScreen() {
   const { state, dispatch } = useApp();
   const { game } = state;
+
+  const [showHistory, setShowHistory] = useState(false);
+  const [showTheme, setShowTheme] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
+
+  // Touch positions for swipe detection
+  const touchStartY = useRef<number | null>(null);
+  const touchSide = useRef<'team1' | 'team2' | null>(null);
 
   // Auto-redirect when game ends
   useEffect(() => {
@@ -14,8 +25,9 @@ export function GameScreen() {
     }
   }, [game.isActive, game.matchHistory.length, dispatch]);
 
-  const team1 = game.playing ? game.allTeams.find(t => t.id === game.playing![0]) : null;
-  const team2 = game.playing ? game.allTeams.find(t => t.id === game.playing![1]) : null;
+  const playing = game.playing;
+  const team1 = playing ? game.allTeams.find(t => t.id === playing[0]) : null;
+  const team2 = playing ? game.allTeams.find(t => t.id === playing[1]) : null;
 
   if (!team1 || !team2) return null;
 
@@ -25,145 +37,232 @@ export function GameScreen() {
 
   const getTeamWins = (teamId: number) => game.wins[teamId] || 0;
 
+  // Swipe down detection
+  const handleTouchStart = useCallback((e: React.TouchEvent, side: 'team1' | 'team2') => {
+    if (!game.config.swipeToDecrease) return;
+    touchStartY.current = e.touches[0].clientY;
+    touchSide.current = side;
+  }, [game.config.swipeToDecrease]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!game.config.swipeToDecrease || touchStartY.current === null || touchSide.current === null) return;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    if (deltaY > 50) {
+      // Swipe down detected
+      dispatch({ type: 'SCORE_POINT_SUBTRACT', payload: { side: touchSide.current } });
+    }
+    touchStartY.current = null;
+    touchSide.current = null;
+  }, [game.config.swipeToDecrease, dispatch]);
+
+  const scoreSide = (side: 'team1' | 'team2') => {
+    dispatch({ type: 'SCORE_POINT', payload: { side } });
+  };
+
+  const isDark = game.config.darkTheme;
+  const isInverted = game.config.orientation === 'inverted';
+  const leftTeam = isInverted ? team2 : team1;
+  const rightTeam = isInverted ? team1 : team2;
+  const leftScore = isInverted ? game.scores[1] : game.scores[0];
+  const rightScore = isInverted ? game.scores[0] : game.scores[1];
+  const leftSide = isInverted ? 'team2' : 'team1';
+  const rightSide = isInverted ? 'team1' : 'team2';
+  const leftWins = isInverted ? getTeamWins(team2.id) : getTeamWins(team1.id);
+  const rightWins = isInverted ? getTeamWins(team1.id) : getTeamWins(team2.id);
+
+  const handleConfigChange = useCallback((config: typeof game.config) => {
+    dispatch({ type: 'UPDATE_GAME_CONFIG', payload: config });
+  }, [dispatch]);
+
+  const handleTeamChange = useCallback((teams: typeof game.allTeams) => {
+    // We need to update individual teams
+    teams.forEach((t, idx) => {
+      const original = game.allTeams[idx];
+      if (original.name !== t.name || original.emoji !== t.emoji) {
+        dispatch({ type: 'UPDATE_TEAM_INFO', payload: { teamId: t.id, name: t.name, emoji: t.emoji } });
+      }
+    });
+  }, [game.allTeams, dispatch]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
-        <button
-          onClick={() => {
-            dispatch({ type: 'CLOSE_GAME' });
-            dispatch({ type: 'SET_SCREEN', payload: 'result' });
-          }}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-        >
-          <ChevronLeft size={22} />
-          <span className="text-sm font-medium">Voltar</span>
-        </button>
-        <div className="flex items-center gap-2">
-          <Trophy size={18} className="text-amber-500" />
-          <span className="text-sm font-semibold text-gray-700">
-            Partida {game.matchHistory.length + 1}
-          </span>
+    <div className={`h-screen w-screen flex flex-col overflow-hidden select-none ${isDark ? 'bg-gray-950' : ''}`}>
+      {/* Timer bar */}
+      {game.config.timerEnabled && (
+        <div className={`flex items-center justify-center gap-3 px-4 py-2 text-sm font-semibold ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
+          <span>▶</span>
+          <span className="tabular-nums">00:00</span>
+          <span>↺</span>
         </div>
-      </header>
+      )}
 
-      {/* Score / Playing area */}
-      <div className="flex-1 grid grid-cols-2 gap-px bg-gray-200 overflow-hidden">
-        {/* Team 1 (Left - Blue) */}
-        <motion.div
-          className="relative flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-blue-100 cursor-pointer select-none"
-          onClick={() => dispatch({ type: 'SCORE_POINT', payload: { side: 'team1' } })}
-          whileTap={{ scale: 0.98 }}
-          layout
+      {/* Main split area */}
+      <div className="flex-1 flex relative">
+        {/* Left half (Blue) */}
+        <div
+          className="flex-1 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden"
+          style={{ backgroundColor: isDark ? '#1a237e' : '#2979D0' }}
+          onClick={() => scoreSide(leftSide)}
+          onTouchStart={e => handleTouchStart(e, leftSide)}
+          onTouchEnd={handleTouchEnd}
         >
-          {/* Team name + members */}
-          <div className="text-center mb-2 px-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-blue-800">
-              🔵 Time {team1.id}
-            </h2>
-            <p className="text-xs sm:text-sm text-blue-600 mt-1 font-medium truncate max-w-[200px]">
-              {team1.members.map(m => m.name).join(', ')}
-            </p>
+          {/* Decorative pawns */}
+          <div className="absolute top-2 left-2 text-[60px] opacity-[0.06] select-none pointer-events-none leading-none">♟</div>
+          <div className="absolute bottom-2 left-2 text-[60px] opacity-[0.06] select-none pointer-events-none leading-none">♟</div>
+          {/* Mascot */}
+          <div className="absolute bottom-4 right-4 text-3xl opacity-40 select-none pointer-events-none">🐸</div>
+
+          {/* Set scores */}
+          {game.config.setsEnabled && game.setScores1.length > 0 && (
+            <div className="absolute top-4 text-white/50 text-xs font-medium tabular-nums">
+              Sets: {game.setScores1.map((s, i) => (
+                <span key={i} className="mx-0.5">{s}</span>
+              )).reduce((acc, el, i) => i === 0 ? [el] : [...acc, <span key={`x${i}`} className="mx-0.5">×</span>, el], [] as React.ReactNode[])}
+            </div>
+          )}
+
+          {/* Team name */}
+          <div className="text-white/90 text-lg sm:text-xl font-bold mb-1 flex items-center gap-2">
+            <span>{leftTeam.emoji}</span>
+            <span>{leftTeam.name || `Time ${leftTeam.id}`}</span>
           </div>
 
           {/* Score */}
-          <div className="text-7xl sm:text-8xl font-black text-blue-700 tabular-nums leading-none mb-3">
-            {game.scores[0]}
+          <div className="text-white text-8xl sm:text-9xl font-black tabular-nums leading-none mb-2">
+            {leftScore}
           </div>
 
-          {/* Playing indicator */}
-          <div className="flex items-center gap-1 text-sm font-semibold text-blue-600 bg-blue-200/60 px-3 py-1 rounded-full">
-            <span>👑</span>
-            <span>JOGANDO</span>
+          {/* Wins indicator */}
+          {game.config.setsEnabled && leftWins > 0 && (
+            <div className="text-white/60 text-xs font-semibold bg-white/10 px-3 py-1 rounded-full">
+              🏆 {leftWins} {leftWins === 1 ? 'vitória' : 'vitórias'}
+            </div>
+          )}
+        </div>
+
+        {/* Divider / Center actions */}
+        <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-2 ${isDark ? 'bg-gray-900/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-3 py-3 shadow-xl`}>
+          {/* Set score between teams */}
+          {game.config.setsEnabled && game.currentSet > 1 && (
+            <div className="text-xs font-bold text-gray-500 mb-1 tabular-nums">
+              {game.setScores1.length > 0 ? game.setScores1.reduce((a, b) => a + b, 0) : 0} × {game.setScores2.length > 0 ? game.setScores2.reduce((a, b) => a + b, 0) : 0}
+            </div>
+          )}
+
+          <div className="grid grid-cols-4 gap-1.5">
+            <MenuButton icon="➕" label="Pontuar" />
+            <MenuButton icon="↩" label="Desfazer" onClick={() => dispatch({ type: 'UNDO_LAST_POINT' })} disabled={game.scoreHistory.length === 0} />
+            <MenuButton icon="⇄" label="Trocar lados" onClick={() => dispatch({ type: 'SWAP_SIDES' })} />
+            <MenuButton icon="📈" label="Histórico" onClick={() => setShowHistory(true)} />
+            <MenuButton icon="⊞" label="Tema" onClick={() => setShowTheme(true)} />
+            <MenuButton icon="🖥" label="Tela cheia" disabled />
+            <MenuButton icon="⭐" label="Destaque" />
+            <MenuButton icon="⚙️" label="Configurações" onClick={() => setShowConfig(true)} />
           </div>
 
-          {/* Click hint */}
-          <div className="absolute bottom-3 text-xs text-blue-400/60 font-medium">
-            Clique para pontuar
-          </div>
-        </motion.div>
+          {/* Current set indicator */}
+          {game.config.setsEnabled && (
+            <div className="text-xs font-semibold text-gray-400 mt-1">
+              Set {game.currentSet}
+            </div>
+          )}
+        </div>
 
-        {/* Team 2 (Right - Red) */}
-        <motion.div
-          className="relative flex flex-col items-center justify-center bg-gradient-to-b from-red-50 to-red-100 cursor-pointer select-none"
-          onClick={() => dispatch({ type: 'SCORE_POINT', payload: { side: 'team2' } })}
-          whileTap={{ scale: 0.98 }}
-          layout
+        {/* Right half (Red) */}
+        <div
+          className="flex-1 flex flex-col items-center justify-center cursor-pointer relative overflow-hidden"
+          style={{ backgroundColor: isDark ? '#b71c1c' : '#C0392B' }}
+          onClick={() => scoreSide(rightSide)}
+          onTouchStart={e => handleTouchStart(e, rightSide)}
+          onTouchEnd={handleTouchEnd}
         >
-          {/* Team name + members */}
-          <div className="text-center mb-2 px-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-red-800">
-              🔴 Time {team2.id}
-            </h2>
-            <p className="text-xs sm:text-sm text-red-600 mt-1 font-medium truncate max-w-[200px]">
-              {team2.members.map(m => m.name).join(', ')}
-            </p>
+          {/* Decorative pawns */}
+          <div className="absolute top-2 right-2 text-[60px] opacity-[0.06] select-none pointer-events-none leading-none">♟</div>
+          <div className="absolute bottom-2 right-2 text-[60px] opacity-[0.06] select-none pointer-events-none leading-none">♟</div>
+          {/* Mascot */}
+          <div className="absolute bottom-4 left-4 text-3xl opacity-40 select-none pointer-events-none">🐄</div>
+
+          {/* Set scores */}
+          {game.config.setsEnabled && game.setScores2.length > 0 && (
+            <div className="absolute top-4 text-white/50 text-xs font-medium tabular-nums">
+              Sets: {game.setScores2.map((s, i) => (
+                <span key={i} className="mx-0.5">{s}</span>
+              )).reduce((acc, el, i) => i === 0 ? [el] : [...acc, <span key={`x${i}`} className="mx-0.5">×</span>, el], [] as React.ReactNode[])}
+            </div>
+          )}
+
+          {/* Team name */}
+          <div className="text-white/90 text-lg sm:text-xl font-bold mb-1 flex items-center gap-2">
+            <span>{rightTeam.emoji}</span>
+            <span>{rightTeam.name || `Time ${rightTeam.id}`}</span>
           </div>
 
           {/* Score */}
-          <div className="text-7xl sm:text-8xl font-black text-red-700 tabular-nums leading-none mb-3">
-            {game.scores[1]}
+          <div className="text-white text-8xl sm:text-9xl font-black tabular-nums leading-none mb-2">
+            {rightScore}
           </div>
 
-          {/* Playing indicator */}
-          <div className="flex items-center gap-1 text-sm font-semibold text-red-600 bg-red-200/60 px-3 py-1 rounded-full">
-            <span>👑</span>
-            <span>JOGANDO</span>
-          </div>
-
-          {/* Click hint */}
-          <div className="absolute bottom-3 text-xs text-red-400/60 font-medium">
-            Clique para pontuar
-          </div>
-        </motion.div>
+          {/* Wins indicator */}
+          {game.config.setsEnabled && rightWins > 0 && (
+            <div className="text-white/60 text-xs font-semibold bg-white/10 px-3 py-1 rounded-full">
+              🏆 {rightWins} {rightWins === 1 ? 'vitória' : 'vitórias'}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Bottom info bar */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3 space-y-3">
+      {/* Bottom bar */}
+      <div className={`${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-t px-4 py-2.5 flex items-center justify-between`}>
         {/* Queue */}
-        {queueTeams.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Na fila:</span>
-            <div className="flex gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto">
+          {queueTeams.length > 0 && (
+            <>
+              <span className={`text-xs font-semibold uppercase tracking-wide shrink-0 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                Fila:
+              </span>
               {queueTeams.map(t => (
                 <span
                   key={t!.id}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-700"
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${
+                    isDark ? 'bg-gray-800 text-gray-300' : 'bg-gray-100 text-gray-700'
+                  }`}
                 >
-                  🎯 Time {t!.id}
+                  {t!.emoji} {t!.name || `Time ${t!.id}`}
                 </span>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* Wins */}
-        {Object.keys(game.wins).length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Vitórias:</span>
-            <div className="flex gap-2 flex-wrap">
-              {game.allTeams.filter(t => (game.wins[t.id] || 0) > 0).map(t => (
-                <span
-                  key={t.id}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-full text-xs font-medium text-amber-700"
-                >
-                  <Trophy size={12} />
-                  Time {t.id} ({getTeamWins(t.id)})
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         {/* End match button */}
         <button
           onClick={() => dispatch({ type: 'END_MATCH' })}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-red-500 to-rose-600 text-white hover:shadow-lg transition-all shadow-md"
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-semibold text-xs bg-gradient-to-r from-red-500 to-rose-600 text-white hover:shadow-lg transition-all shadow-md shrink-0 ml-2"
         >
-          <Flag size={16} />
-          Encerrar partida
+          🏁 Encerrar
         </button>
       </div>
+
+      {/* Overlaid modals */}
+      <HistoryDropdown
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        matchHistory={game.matchHistory}
+      />
+      <ThemeModal
+        isOpen={showTheme}
+        onClose={() => setShowTheme(false)}
+        config={game.config}
+        onConfigChange={handleConfigChange}
+      />
+      <GameConfigModal
+        isOpen={showConfig}
+        onClose={() => setShowConfig(false)}
+        config={game.config}
+        teams={game.allTeams}
+        onConfigChange={handleConfigChange}
+        onTeamChange={handleTeamChange}
+        onOpenTheme={() => { setShowConfig(false); setShowTheme(true); }}
+      />
     </div>
   );
 }

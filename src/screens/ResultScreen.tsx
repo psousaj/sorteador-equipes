@@ -4,17 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { TeamCard } from '../components/TeamCard';
 import type { GameConfig } from '../types';
+import { defaultGameConfig, randomTeamEmoji } from '../types';
 
 export function ResultScreen() {
   const { state, dispatch, startDraw } = useApp();
   const { currentResult } = state;
   const [copied, setCopied] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false);
-  const [gameConfig, setGameConfig] = useState<GameConfig>({
-    pointsToWin: 5,
-    winLimit: 2,
-    deuce: true,
-  });
+  const [gameConfig, setGameConfig] = useState<GameConfig>(defaultGameConfig());
 
   if (!currentResult) return null;
 
@@ -212,8 +209,8 @@ export function ResultScreen() {
                       type="number"
                       min={1}
                       max={20}
-                      value={gameConfig.winLimit}
-                      onChange={e => setGameConfig(prev => ({ ...prev, winLimit: Number(e.target.value) }))}
+                      value={gameConfig.margin}
+                      onChange={e => setGameConfig(prev => ({ ...prev, margin: Number(e.target.value) }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:ring-2 focus:ring-brand focus:border-transparent"
                     />
                   </div>
@@ -221,19 +218,25 @@ export function ResultScreen() {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={gameConfig.deuce}
-                      onChange={e => setGameConfig(prev => ({ ...prev, deuce: e.target.checked }))}
+                      checked={gameConfig.setsEnabled}
+                      onChange={e => setGameConfig(prev => ({ ...prev, setsEnabled: e.target.checked }))}
                       className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
                     />
-                    <span className="text-sm font-medium text-gray-700">Deuce (diferença de 2 pontos)</span>
+                    <span className="text-sm font-medium text-gray-700">Sets (melhor de X)</span>
                   </label>
                 </div>
 
                 <button
                   onClick={() => {
+                    // Add emoji and name to each team
+                    const teamsWithInfo = currentResult.teams.map(t => ({
+                      ...t,
+                      name: t.name || `Time ${t.id}`,
+                      emoji: t.emoji || randomTeamEmoji(),
+                    }));
                     dispatch({
                       type: 'START_GAME',
-                      payload: { config: gameConfig, teams: currentResult.teams },
+                      payload: { config: gameConfig, teams: teamsWithInfo },
                     });
                     dispatch({ type: 'SET_SCREEN', payload: 'game' });
                     setShowGameModal(false);

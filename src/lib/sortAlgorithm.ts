@@ -46,18 +46,18 @@ function validateDraw(input: DrawInput): DrawValidation {
 
     for (const rule of rules) {
       if (rule.type === 'exact') {
-        const needed = rule.value * numTeams;
+        const needed = rule.perTeam * numTeams;
         if (peopleWithTag < needed) {
-          const neededTotal = rule.value * numTeams;
+          const neededTotal = rule.perTeam * numTeams;
           errors.push(
-            `Regra "exatamente ${rule.value} ${tag}" precisa de ${neededTotal} pessoa(s), mas só tem ${peopleWithTag}.`
+            `Regra "exatamente ${rule.perTeam} ${tag}" precisa de ${neededTotal} pessoa(s), mas só tem ${peopleWithTag}.`
           );
         }
       } else if (rule.type === 'min') {
-        const needed = rule.value * numTeams;
+        const needed = rule.perTeam * numTeams;
         if (peopleWithTag < needed) {
           errors.push(
-            `Regra "mínimo ${rule.value} ${tag}" precisa de pelo menos ${needed} pessoa(s), mas só tem ${peopleWithTag}.`
+            `Regra "mínimo ${rule.perTeam} ${tag}" precisa de pelo menos ${needed} pessoa(s), mas só tem ${peopleWithTag}.`
           );
         }
       }
@@ -141,7 +141,7 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
     const shuffled = shuffle(candidates);
     let personIdx = 0;
     for (let teamIdx = 0; teamIdx < numTeams; teamIdx++) {
-      for (let n = 0; n < rule.value && personIdx < shuffled.length; n++) {
+      for (let n = 0; n < rule.perTeam && personIdx < shuffled.length; n++) {
         teams[teamIdx].push(shuffled[personIdx]);
         personIdx++;
       }
@@ -187,8 +187,8 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
   for (const rule of maxRules) {
     for (let i = 0; i < numTeams; i++) {
       const count = teams[i].filter(p => p.tags.includes(rule.tag)).length;
-      if (count > rule.value) {
-        errors.push(`Time ${i + 1} tem ${count} "${rule.tag}", mas o máximo é ${rule.value}.`);
+      if (count > rule.perTeam) {
+        errors.push(`Time ${i + 1} tem ${count} "${rule.tag}", mas o máximo é ${rule.perTeam}.`);
       }
     }
   }
@@ -236,7 +236,7 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
       for (const rule of maxRules) {
         if (person.tags.includes(rule.tag)) {
           const currentCount = team.filter(p => p.tags.includes(rule.tag)).length;
-          if (currentCount + 1 > rule.value) {
+          if (currentCount + 1 > rule.perTeam) {
             violatesMax = true;
             break;
           }
@@ -290,6 +290,8 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
     id: i + 1,
     members,
     captain: captains[i],
+    name: `Time ${i + 1}`,
+    emoji: '🎯',
   }));
 
   return { teams: result, errors };

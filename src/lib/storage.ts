@@ -1,4 +1,4 @@
-import type { DrawResult, Person, TeamRule, DrawConfig, BlockedPair } from '../types';
+import type { DrawResult, Person, TeamRule, DrawConfig, BlockedPair, GameConfig } from '../types';
 
 const STORAGE_KEYS = {
   history: 'sorteador:history',
@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   lastPeople: 'sorteador:lastPeople',
   customTags: 'sorteador:customTags',
   blockedPairs: 'sorteador:blockedPairs',
+  gameConfig: 'sorteador:gameConfig',
 } as const;
 
 const MAX_HISTORY = 50;
@@ -109,5 +110,22 @@ export function getBlockedPairs(): BlockedPair[] {
     return JSON.parse(data) as BlockedPair[];
   } catch {
     return [];
+  }
+}
+
+export function saveGameConfig(config: GameConfig): void {
+  try {
+    localStorage.setItem(STORAGE_KEYS.gameConfig, JSON.stringify(config));
+  } catch {
+    // Ignore
+  }
+}
+
+export function getGameConfig(): GameConfig | null {
+  try {
+    const data = localStorage.getItem(STORAGE_KEYS.gameConfig);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
   }
 }

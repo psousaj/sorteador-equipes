@@ -21,7 +21,7 @@ export function RuleRow({ rule, tagLabel, tagColor, onRemove }: RuleRowProps) {
         {tagLabel}
       </span>
       <span className="text-xs text-gray-500 font-medium">{typeLabel[rule.type]}</span>
-      <span className="text-sm font-bold text-gray-800">{rule.value}</span>
+      <span className="text-sm font-bold text-gray-800">{rule.perTeam}</span>
       <span className="text-xs text-gray-400">por time</span>
       <button
         onClick={() => onRemove(rule.id)}

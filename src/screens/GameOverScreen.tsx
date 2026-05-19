@@ -39,23 +39,40 @@ export function GameOverScreen() {
             game.matchHistory.map((match, idx) => (
               <div
                 key={match.id}
-                className="bg-white rounded-xl border border-gray-200 p-3 flex items-center justify-between"
+                className="bg-white rounded-xl border border-gray-200 p-3"
               >
-                <div className="text-sm text-gray-700">
-                  <span className="font-medium">{match.team1Name}</span>
-                  <span className="text-gray-400 mx-1">vs</span>
-                  <span className="font-medium">{match.team2Name}</span>
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    <span className="font-medium">{match.team1Name}</span>
+                    <span className="text-gray-400 mx-1">vs</span>
+                    <span className="font-medium">{match.team2Name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-bold tabular-nums ${
+                      match.winner === 'team1' ? 'text-blue-600' : 'text-red-600'
+                    }`}>
+                      {match.score1} × {match.score2}
+                    </span>
+                    <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                      Venceu {match.winner === 'team1' ? match.team1Name : match.team2Name}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm font-bold tabular-nums ${
-                    match.winner === 'team1' ? 'text-blue-600' : 'text-red-600'
-                  }`}>
-                    {match.score1} × {match.score2}
-                  </span>
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
-                    Venceu {match.winner === 'team1' ? match.team1Name : match.team2Name}
-                  </span>
-                </div>
+
+                {/* Set details — only if sets were enabled */}
+                {match.setScores1 && match.setScores1.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-1 text-xs text-gray-500">
+                    <span className="font-medium">Sets:</span>
+                    {match.setScores1.map((s1, i) => (
+                      <span key={i} className="tabular-nums">
+                        {i > 0 && <span className="mx-1 text-gray-300">•</span>}
+                        <span className={match.winner === 'team1' && i === match.setScores1.length - 1 ? 'text-blue-600 font-semibold' : ''}>
+                          {s1}×{match.setScores2[i]}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))
           )}

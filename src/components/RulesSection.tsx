@@ -37,7 +37,7 @@ export function RulesSection({
       id: uuidv4(),
       tag: newRuleTag,
       type: newRuleType,
-      value: newRuleValue,
+      perTeam: newRuleValue,
     };
     onAddRule(rule);
     setShowRuleForm(false);

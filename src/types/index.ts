@@ -1,7 +1,7 @@
 export interface Person {
   id: string;
   name: string;
-  gender: 'male' | 'female' | 'unknown';
+  gender: GenderOption;
   tags: string[];
   blockedWith: string[];
 }
@@ -9,8 +9,8 @@ export interface Person {
 export interface TeamRule {
   id: string;
   tag: string;
-  type: 'min' | 'max' | 'exact';
-  value: number;
+  type: 'exact' | 'min' | 'max';
+  perTeam: number;
 }
 
 export interface DrawConfig {
@@ -25,6 +25,8 @@ export interface Team {
   id: number;
   members: Person[];
   captain: Person | null;
+  name: string;        // ← editável
+  emoji: string;       // ← editável
 }
 
 export interface DrawResult {
@@ -36,9 +38,24 @@ export interface DrawResult {
 }
 
 export interface GameConfig {
-  pointsToWin: number;
-  winLimit: number;
-  deuce: boolean;
+  // Modo de jogo
+  setsEnabled: boolean;
+  pointsToWin: number;      // pontos pra vencer o set
+  margin: number;           // diferença mínima pra vencer (ex: 2 = deuce)
+  setsToWin: number;        // melhor de X sets
+
+  // Timer (visual only)
+  timerEnabled: boolean;
+  timerDuration: number;    // minutos
+  timerCountdown: boolean;
+  timerSound: boolean;
+
+  // Geral
+  swipeToDecrease: boolean;
+  vibration: boolean;
+  askSetWinner: boolean;
+  darkTheme: boolean;
+  orientation: 'normal' | 'inverted';
 }
 
 export interface MatchResult {
@@ -49,6 +66,9 @@ export interface MatchResult {
   team2Name: string;
   score1: number;
   score2: number;
+  setNumber: number;          // número do set
+  setScores1: number[];       // histórico de todos os sets (time 1)
+  setScores2: number[];       // histórico de todos os sets (time 2)
   winner: 'team1' | 'team2';
 }
 
@@ -56,11 +76,15 @@ export interface GameSession {
   isActive: boolean;
   config: GameConfig;
   allTeams: Team[];
-  queue: number[];         // team IDs waiting
-  playing: [number, number] | null;  // team IDs playing now
+  queue: number[];                              // team IDs waiting
+  playing: [number, number] | null;             // team IDs playing now
   scores: [number, number];
-  wins: Record<number, number>;   // teamId -> wins
+  setScores1: number[];                         // pontuação de cada set (time 1)
+  setScores2: number[];                         // pontuação de cada set (time 2)
+  currentSet: number;                           // set atual (1-indexed)
+  wins: Record<number, number>;                 // teamId -> wins
   matchHistory: MatchResult[];
+  scoreHistory: [number, number][];             // histórico de scores p/ undo
 }
 
 export type Screen = 'home' | 'animation' | 'result' | 'history' | 'game' | 'gameover';
@@ -89,3 +113,27 @@ export const TEAM_COLORS = [
   { bg: 'bg-team-7', light: 'bg-teal-100', border: 'border-teal-400', text: 'text-teal-700', hex: '#00CEC9' },
   { bg: 'bg-team-8', light: 'bg-indigo-100', border: 'border-indigo-400', text: 'text-indigo-700', hex: '#A29BFE' },
 ];
+
+export const TEAM_EMOJIS = ['🦁','🐯','🦅','🐉','🦈','🐺','🦊','🐼','🐨','🦄','🐲','🐸','🦋','🐙','🦀','🐝','🦜','🐘','🦍','🦖'];
+
+export function randomTeamEmoji(): string {
+  return TEAM_EMOJIS[Math.floor(Math.random() * TEAM_EMOJIS.length)];
+}
+
+export function defaultGameConfig(): GameConfig {
+  return {
+    setsEnabled: false,
+    pointsToWin: 10,
+    margin: 2,
+    setsToWin: 3,
+    timerEnabled: false,
+    timerDuration: 10,
+    timerCountdown: false,
+    timerSound: true,
+    swipeToDecrease: true,
+    vibration: false,
+    askSetWinner: false,
+    darkTheme: false,
+    orientation: 'normal',
+  };
+}

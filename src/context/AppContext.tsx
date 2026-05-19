@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair, GameConfig, GameSession, MatchResult } from '../types';
+import { defaultGameConfig, randomTeamEmoji } from '../types';
 import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs } from '../lib/storage';
 import { runDraw } from '../lib/sortAlgorithm';
 import { inferGender } from '../lib/genderInference';
@@ -40,13 +41,17 @@ const initialState: AppState = {
 
   game: {
     isActive: false,
-    config: { pointsToWin: 5, winLimit: 2, deuce: true },
+    config: defaultGameConfig(),
     allTeams: [],
     queue: [],
     playing: null,
     scores: [0, 0],
+    setScores1: [],
+    setScores2: [],
+    currentSet: 1,
     wins: {},
     matchHistory: [],
+    scoreHistory: [],
   },
 };
 
@@ -78,6 +83,11 @@ type Action =
   | { type: 'CLEAR_PEOPLE' }
   | { type: 'START_GAME'; payload: { config: GameConfig; teams: Team[] } }
   | { type: 'SCORE_POINT'; payload: { side: 'team1' | 'team2' } }
+  | { type: 'SCORE_POINT_SUBTRACT'; payload: { side: 'team1' | 'team2' } }
+  | { type: 'UNDO_LAST_POINT' }
+  | { type: 'SWAP_SIDES' }
+  | { type: 'UPDATE_GAME_CONFIG'; payload: Partial<GameConfig> }
+  | { type: 'UPDATE_TEAM_INFO'; payload: { teamId: number; name?: string; emoji?: string } }
   | { type: 'END_MATCH' }
   | { type: 'CLOSE_GAME' };
 
@@ -260,11 +270,15 @@ function reducer(state: AppState, action: Action): AppState {
       saveBlockedPairs([]);
       return { ...state, people: [], importedNames: '' };
 
+    // ── GAME ACTIONS ─────────────────────────────────────
+
     case 'START_GAME': {
       const { config, teams } = action.payload;
       const teamIds = teams.map(t => t.id);
-      const queue = teamIds.slice(2); // teams from index 3 onwards
+      const queue = teamIds.slice(2);
       const playing: [number, number] = [teamIds[0], teamIds[1]];
+      const wins: Record<number, number> = {};
+      teamIds.forEach(id => { wins[id] = 0; });
       return {
         ...state,
         game: {
@@ -274,8 +288,12 @@ function reducer(state: AppState, action: Action): AppState {
           queue,
           playing,
           scores: [0, 0],
-          wins: {},
+          setScores1: [],
+          setScores2: [],
+          currentSet: 1,
+          wins,
           matchHistory: [],
+          scoreHistory: [],
         },
       };
     }
@@ -285,63 +303,59 @@ function reducer(state: AppState, action: Action): AppState {
       if (!game.playing || !game.isActive) return state;
 
       const side = action.payload.side;
-      const newScores: [number, number] = [...game.scores] as [number, number];
-      newScores[side === 'team1' ? 0 : 1] += 1;
+      const idx = side === 'team1' ? 0 : 1;
 
-      const { pointsToWin } = game.config;
-      // Check if match is won
-      const team1Won = newScores[0] >= pointsToWin;
-      const team2Won = newScores[1] >= pointsToWin;
+      if (!game.config.setsEnabled) {
+        // ── Traditional mode (no sets) ───────────────────
+        const newScores: [number, number] = [...game.scores] as [number, number];
+        newScores[idx] += 1;
+        const { pointsToWin } = game.config;
 
-      if (!team1Won && !team2Won) {
-        // No winner yet, just update scores
-        return { ...state, game: { ...game, scores: newScores } };
-      }
+        // Check if someone reached the target
+        const team1Won = newScores[0] >= pointsToWin;
+        const team2Won = newScores[1] >= pointsToWin;
 
-      // Record match result
-      const winner = team1Won ? 'team1' as const : 'team2' as const;
-      const winnerId = winner === 'team1' ? game.playing[0] : game.playing[1];
-      const loserId = winner === 'team1' ? game.playing[1] : game.playing[0];
-      const winnerTeam = game.allTeams.find(t => t.id === winnerId)!;
-      const loserTeam = game.allTeams.find(t => t.id === loserId)!;
-
-      const matchResult: MatchResult = {
-        id: uuidv4(),
-        team1Id: game.playing[0],
-        team2Id: game.playing[1],
-        team1Name: `Time ${game.playing[0]}`,
-        team2Name: `Time ${game.playing[1]}`,
-        score1: newScores[0],
-        score2: newScores[1],
-        winner,
-      };
-
-      const newWins = { ...game.wins };
-      newWins[winnerId] = (newWins[winnerId] || 0) + 1;
-      const winnerTotalWins = newWins[winnerId];
-      const { winLimit } = game.config;
-
-      let newQueue = [...game.queue];
-      let newPlaying: [number, number] | null = game.playing;
-      let isActive = true;
-
-      if (winnerTotalWins >= winLimit) {
-        // Winning team reached win limit — remove both from rotation
-        // Both teams leave, pop next 2 from queue
-        if (newQueue.length >= 2) {
-          newPlaying = [newQueue[0], newQueue[1]];
-          newQueue = newQueue.slice(2);
-        } else {
-          newPlaying = null;
-          isActive = false;
+        if (!team1Won && !team2Won) {
+          // Save history, no winner yet
+          return {
+            ...state,
+            game: {
+              ...game,
+              scores: newScores,
+              scoreHistory: [...game.scoreHistory, [...game.scores] as [number, number]],
+            },
+          };
         }
-      } else {
-        // Winner stays, loser goes to front of queue, next team enters
-        newQueue = [loserId, ...newQueue];
+
+        // A match was won — record result and rotate
+        const winner = team1Won ? 'team1' as const : 'team2' as const;
+        const winnerId = winner === 'team1' ? game.playing[0] : game.playing[1];
+        const loserId = winner === 'team1' ? game.playing[1] : game.playing[0];
+        const winnerTeam = game.allTeams.find(t => t.id === winnerId)!;
+        const loserTeam = game.allTeams.find(t => t.id === loserId)!;
+
+        const matchResult: MatchResult = {
+          id: uuidv4(),
+          team1Id: game.playing[0],
+          team2Id: game.playing[1],
+          team1Name: winnerTeam.name,
+          team2Name: loserTeam.name,
+          score1: newScores[0],
+          score2: newScores[1],
+          setNumber: 1,
+          setScores1: [newScores[0]],
+          setScores2: [newScores[1]],
+          winner,
+        };
+
+        // Rotation: winner stays, loser goes to back of queue
+        let newQueue = [...game.queue, loserId];
+        let newPlaying: [number, number] | null = game.playing;
+        let isActive = true;
+
         if (newQueue.length >= 1) {
           const nextTeamId = newQueue[0];
           newQueue = newQueue.slice(1);
-          // Winner plays on their original side
           newPlaying = winner === 'team1'
             ? [winnerId, nextTeamId]
             : [nextTeamId, winnerId];
@@ -349,18 +363,213 @@ function reducer(state: AppState, action: Action): AppState {
           newPlaying = null;
           isActive = false;
         }
+
+        return {
+          ...state,
+          game: {
+            ...game,
+            scores: [0, 0],
+            setScores1: [],
+            setScores2: [],
+            currentSet: 1,
+            playing: newPlaying,
+            queue: newQueue,
+            matchHistory: [...game.matchHistory, matchResult],
+            isActive,
+            scoreHistory: [],
+          },
+        };
+      }
+
+      // ── Sets mode ──────────────────────────────────────
+      const newScoreHistory: [number, number][] = [
+        ...game.scoreHistory,
+        [...game.scores] as [number, number],
+      ];
+      const newScores: [number, number] = [...game.scores] as [number, number];
+      newScores[idx] += 1;
+
+      const { pointsToWin, margin } = game.config;
+
+      // Check set win condition: reached pointsToWin WITH margin
+      const setWinner: 'team1' | 'team2' | null =
+        newScores[0] >= pointsToWin && Math.abs(newScores[0] - newScores[1]) >= margin
+          ? 'team1'
+          : newScores[1] >= pointsToWin && Math.abs(newScores[0] - newScores[1]) >= margin
+            ? 'team2'
+            : null;
+
+      if (setWinner === null) {
+        // No set winner yet
+        return {
+          ...state,
+          game: {
+            ...game,
+            scores: newScores,
+            scoreHistory: newScoreHistory,
+          },
+        };
+      }
+
+      // A set was won
+      const newSetScores1 = [...game.setScores1, newScores[0]];
+      const newSetScores2 = [...game.setScores2, newScores[1]];
+      const newWins = { ...game.wins };
+      const winnerTeamId = setWinner === 'team1' ? game.playing[0] : game.playing[1];
+      const loserTeamId = setWinner === 'team1' ? game.playing[1] : game.playing[0];
+      newWins[winnerTeamId] = (newWins[winnerTeamId] || 0) + 1;
+
+      const newCurrentSet = game.currentSet + 1;
+      const matchWinner = newWins[winnerTeamId] >= game.config.setsToWin;
+
+      if (!matchWinner) {
+        // Same teams continue, new set
+        return {
+          ...state,
+          game: {
+            ...game,
+            scores: [0, 0],
+            currentSet: newCurrentSet,
+            setScores1: newSetScores1,
+            setScores2: newSetScores2,
+            wins: newWins,
+            scoreHistory: [],
+          },
+        };
+      }
+
+      // The match was won (reached setsToWin sets)
+      const matchWinnerTeam = game.allTeams.find(t => t.id === winnerTeamId)!;
+      const matchLoserTeam = game.allTeams.find(t => t.id === loserTeamId)!;
+
+      const matchResult: MatchResult = {
+        id: uuidv4(),
+        team1Id: game.playing[0],
+        team2Id: game.playing[1],
+        team1Name: matchWinnerTeam.name,
+        team2Name: matchLoserTeam.name,
+        score1: newScores[0],
+        score2: newScores[1],
+        setNumber: game.currentSet,
+        setScores1: newSetScores1,
+        setScores2: newSetScores2,
+        winner: setWinner,
+      };
+
+      // Rotation: winner stays, loser goes to back of queue
+      let newQueue = [...game.queue, loserTeamId];
+      let newPlaying: [number, number] | null = game.playing;
+      let isActive = true;
+
+      if (newQueue.length >= 1) {
+        const nextTeamId = newQueue[0];
+        newQueue = newQueue.slice(1);
+        newPlaying = setWinner === 'team1'
+          ? [winnerTeamId, nextTeamId]
+          : [nextTeamId, winnerTeamId];
+      } else {
+        newPlaying = null;
+        isActive = false;
       }
 
       return {
         ...state,
         game: {
           ...game,
-          scores: isActive ? [0, 0] : [0, 0],
+          scores: [0, 0],
+          currentSet: 1,
+          setScores1: [],
+          setScores2: [],
           playing: newPlaying,
           queue: newQueue,
           wins: newWins,
           matchHistory: [...game.matchHistory, matchResult],
           isActive,
+          scoreHistory: [],
+        },
+      };
+    }
+
+    case 'SCORE_POINT_SUBTRACT': {
+      const { game } = state;
+      if (!game.playing || !game.isActive) return state;
+
+      const idx = action.payload.side === 'team1' ? 0 : 1;
+      const newScores: [number, number] = [...game.scores] as [number, number];
+      newScores[idx] = Math.max(0, newScores[idx] - 1);
+
+      return {
+        ...state,
+        game: {
+          ...game,
+          scores: newScores,
+        },
+      };
+    }
+
+    case 'UNDO_LAST_POINT': {
+      const { game } = state;
+      if (game.scoreHistory.length === 0) return state;
+
+      const history = [...game.scoreHistory];
+      const lastScores = history.pop()!;
+
+      return {
+        ...state,
+        game: {
+          ...game,
+          scores: lastScores,
+          scoreHistory: history,
+        },
+      };
+    }
+
+    case 'SWAP_SIDES': {
+      const { game } = state;
+      if (!game.playing) return state;
+
+      const newPlaying: [number, number] = [game.playing[1], game.playing[0]];
+
+      return {
+        ...state,
+        game: {
+          ...game,
+          playing: newPlaying,
+          scores: [game.scores[1], game.scores[0]],
+          setScores1: [...game.setScores2],
+          setScores2: [...game.setScores1],
+        },
+      };
+    }
+
+    case 'UPDATE_GAME_CONFIG': {
+      return {
+        ...state,
+        game: {
+          ...state.game,
+          config: {
+            ...state.game.config,
+            ...action.payload,
+          },
+        },
+      };
+    }
+
+    case 'UPDATE_TEAM_INFO': {
+      const { teamId, name, emoji } = action.payload;
+      return {
+        ...state,
+        game: {
+          ...state.game,
+          allTeams: state.game.allTeams.map(t =>
+            t.id === teamId
+              ? {
+                  ...t,
+                  ...(name !== undefined ? { name } : {}),
+                  ...(emoji !== undefined ? { emoji } : {}),
+                }
+              : t
+          ),
         },
       };
     }
@@ -369,52 +578,39 @@ function reducer(state: AppState, action: Action): AppState {
       const { game } = state;
       if (!game.playing || !game.isActive) return state;
 
-      // Determine winner based on current scores
-      let winnerSide: 'team1' | 'team2';
-      if (game.scores[0] > game.scores[1]) {
-        winnerSide = 'team1';
-      } else if (game.scores[1] > game.scores[0]) {
-        winnerSide = 'team2';
-      } else {
-        // Tie — score didn't change, just return
+      // Determine set/winner based on current scores
+      if (game.scores[0] === game.scores[1]) {
+        // Tie — nothing to do
         return state;
       }
 
+      const winnerSide: 'team1' | 'team2' = game.scores[0] > game.scores[1] ? 'team1' : 'team2';
       const winnerId = winnerSide === 'team1' ? game.playing[0] : game.playing[1];
       const loserId = winnerSide === 'team1' ? game.playing[1] : game.playing[0];
       const winnerTeam = game.allTeams.find(t => t.id === winnerId)!;
       const loserTeam = game.allTeams.find(t => t.id === loserId)!;
 
-      const matchResult: MatchResult = {
-        id: uuidv4(),
-        team1Id: game.playing[0],
-        team2Id: game.playing[1],
-        team1Name: `Time ${game.playing[0]}`,
-        team2Name: `Time ${game.playing[1]}`,
-        score1: game.scores[0],
-        score2: game.scores[1],
-        winner: winnerSide,
-      };
+      if (!game.config.setsEnabled) {
+        // ── Traditional mode ─────────────────────────────
+        const matchResult: MatchResult = {
+          id: uuidv4(),
+          team1Id: game.playing[0],
+          team2Id: game.playing[1],
+          team1Name: winnerTeam.name,
+          team2Name: loserTeam.name,
+          score1: game.scores[0],
+          score2: game.scores[1],
+          setNumber: 1,
+          setScores1: [game.scores[0]],
+          setScores2: [game.scores[1]],
+          winner: winnerSide,
+        };
 
-      const newWins = { ...game.wins };
-      newWins[winnerId] = (newWins[winnerId] || 0) + 1;
-      const winnerTotalWins = newWins[winnerId];
-      const { winLimit } = game.config;
+        // Rotation: winner stays, loser to back of queue
+        let newQueue = [...game.queue, loserId];
+        let newPlaying: [number, number] | null = game.playing;
+        let isActive = true;
 
-      let newQueue = [...game.queue];
-      let newPlaying: [number, number] | null = game.playing;
-      let isActive = true;
-
-      if (winnerTotalWins >= winLimit) {
-        if (newQueue.length >= 2) {
-          newPlaying = [newQueue[0], newQueue[1]];
-          newQueue = newQueue.slice(2);
-        } else {
-          newPlaying = null;
-          isActive = false;
-        }
-      } else {
-        newQueue = [loserId, ...newQueue];
         if (newQueue.length >= 1) {
           const nextTeamId = newQueue[0];
           newQueue = newQueue.slice(1);
@@ -425,18 +621,94 @@ function reducer(state: AppState, action: Action): AppState {
           newPlaying = null;
           isActive = false;
         }
+
+        return {
+          ...state,
+          game: {
+            ...game,
+            scores: [0, 0],
+            setScores1: [],
+            setScores2: [],
+            currentSet: 1,
+            playing: newPlaying,
+            queue: newQueue,
+            matchHistory: [...game.matchHistory, matchResult],
+            isActive,
+            scoreHistory: [],
+          },
+        };
+      }
+
+      // ── Sets mode ──────────────────────────────────────
+      // End the current set with whoever has more points
+      const newSetScores1 = [...game.setScores1, game.scores[0]];
+      const newSetScores2 = [...game.setScores2, game.scores[1]];
+      const newWins = { ...game.wins };
+      newWins[winnerId] = (newWins[winnerId] || 0) + 1;
+
+      const newCurrentSet = game.currentSet + 1;
+
+      if (newWins[winnerId] < game.config.setsToWin) {
+        // Same teams continue, new set
+        return {
+          ...state,
+          game: {
+            ...game,
+            scores: [0, 0],
+            currentSet: newCurrentSet,
+            setScores1: newSetScores1,
+            setScores2: newSetScores2,
+            wins: newWins,
+            scoreHistory: [],
+          },
+        };
+      }
+
+      // Match was won
+      const matchResult: MatchResult = {
+        id: uuidv4(),
+        team1Id: game.playing[0],
+        team2Id: game.playing[1],
+        team1Name: winnerTeam.name,
+        team2Name: loserTeam.name,
+        score1: game.scores[0],
+        score2: game.scores[1],
+        setNumber: game.currentSet,
+        setScores1: newSetScores1,
+        setScores2: newSetScores2,
+        winner: winnerSide,
+      };
+
+      // Rotation: winner stays, loser to back of queue
+      let newQueue = [...game.queue, loserId];
+      let newPlaying: [number, number] | null = game.playing;
+      let isActive = true;
+
+      if (newQueue.length >= 1) {
+        const nextTeamId = newQueue[0];
+        newQueue = newQueue.slice(1);
+        newPlaying = winnerSide === 'team1'
+          ? [winnerId, nextTeamId]
+          : [nextTeamId, winnerId];
+      } else {
+        newPlaying = null;
+        isActive = false;
       }
 
       return {
         ...state,
         game: {
           ...game,
-          scores: isActive ? [0, 0] : [0, 0],
+          scores: [0, 0],
+          currentSet: 1,
+          setScores1: [],
+          setScores2: [],
           playing: newPlaying,
           queue: newQueue,
           wins: newWins,
           matchHistory: [...game.matchHistory, matchResult],
           isActive,
+          scoreHistory: [],
         },
       };
     }
@@ -446,13 +718,17 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         game: {
           isActive: false,
-          config: { pointsToWin: 5, winLimit: 2, deuce: true },
+          config: defaultGameConfig(),
           allTeams: [],
           queue: [],
           playing: null,
           scores: [0, 0],
+          setScores1: [],
+          setScores2: [],
+          currentSet: 1,
           wins: {},
           matchHistory: [],
+          scoreHistory: [],
         },
       };
 
