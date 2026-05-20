@@ -721,12 +721,6 @@ function reducer(state: AppState, action: Action): AppState {
         game: {
           ...game,
           scores: [0, 0],
-          setScores1: [],
-          setScores2: [],
-          currentSet: 1,
-          wins: {},
-          matchHistory: [],
-          scoreHistory: [],
           isActive: true,
         },
       };
