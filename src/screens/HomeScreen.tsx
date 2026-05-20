@@ -8,6 +8,7 @@ import { DEFAULT_TAGS } from '../types';
 import type { TeamRule, Person, BlockedPair } from '../types';
 import { playPopSound, playClickSound } from '../lib/sounds';
 import { saveCustomTags, getCustomTags } from '../lib/storage';
+import { SPORTS, CAPTAIN_TAG } from '../lib/sports';
 import { PeopleInput } from '../components/PeopleInput';
 import { PeopleList } from '../components/PeopleList';
 import { TeamConfig } from '../components/TeamConfig';
@@ -288,6 +289,46 @@ export function HomeScreen() {
               onToggleTooltip={() => setCaptainTooltipOpen(prev => !prev)}
               captainTooltipRef={captainTooltipRef}
             />
+
+            {/* Sport Template */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-2">
+              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                Template de Esporte
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {SPORTS.map(sport => (
+                  <button
+                    key={sport.id}
+                    onClick={() => {
+                      const newCustomTags = [...customTags];
+                      sport.tags.forEach(tag => {
+                        if (!newCustomTags.includes(tag)) newCustomTags.push(tag);
+                      });
+                      if (sport.hasCaptain && !newCustomTags.includes(CAPTAIN_TAG)) {
+                        newCustomTags.push(CAPTAIN_TAG);
+                      }
+                      setCustomTags(newCustomTags);
+                      saveCustomTags(newCustomTags);
+                    }}
+                    className={`
+                      flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border
+                      ${customTags.some(t => sport.tags.includes(t) || (sport.hasCaptain && t === CAPTAIN_TAG))
+                        ? 'bg-brand/10 text-brand border-brand/30'
+                        : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                      }
+                    `}
+                  >
+                    <span className="text-sm">{sport.emoji}</span>
+                    {sport.name}
+                  </button>
+                ))}
+              </div>
+              {customTags.length > 0 && (
+                <p className="text-[10px] text-gray-400">
+                  Tags do template aparecem ao clicar nas pessoas ✨
+                </p>
+              )}
+            </div>
 
             {/* Draw error (inline, redundancy) */}
             {drawError && (
