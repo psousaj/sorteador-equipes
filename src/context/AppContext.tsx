@@ -306,6 +306,11 @@ function reducer(state: AppState, action: Action): AppState {
       const side = action.payload.side;
       const idx = side === 'team1' ? 0 : 1;
 
+      // Vibration feedback
+      if (game.config.vibration && typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+
       if (!game.config.setsEnabled) {
         // ── Traditional mode (no sets) ───────────────────
         const newScores: [number, number] = [...game.scores] as [number, number];
@@ -349,17 +354,44 @@ function reducer(state: AppState, action: Action): AppState {
           winner,
         };
 
-        // Rotation: winner stays, loser goes to back of queue
+        // Rotation: loser goes to back of queue
         let newQueue = [...game.queue, loserId];
         let newPlaying: [number, number] | null = game.playing;
         let isActive = true;
 
+        // Reset scores
+        const newWins = { ...game.wins };
+        newWins[winnerId] = (newWins[winnerId] || 0) + 1;
+
+        // Check if winner hit maxWins
+        if (newWins[winnerId] >= game.config.maxWins) {
+          // Winner is done, put at top of queue (observer)
+          newQueue = [winnerId, ...newQueue];
+          newPlaying = null;
+        } else {
+          // Winner stays
+          newPlaying = game.playing;
+        }
+
+        // Pull next from queue
         if (newQueue.length >= 1) {
           const nextTeamId = newQueue[0];
           newQueue = newQueue.slice(1);
-          newPlaying = winner === 'team1'
-            ? [winnerId, nextTeamId]
-            : [nextTeamId, winnerId];
+          if (!newPlaying) {
+            // Need two teams: first from queue, then next
+            if (newQueue.length >= 1) {
+              const secondTeamId = newQueue[0];
+              newQueue = newQueue.slice(1);
+              newPlaying = [nextTeamId, secondTeamId];
+            } else {
+              newPlaying = [nextTeamId, winnerId];
+            }
+          } else {
+            // Winner stays, challenger comes in
+            newPlaying = winner === 'team1'
+              ? [winnerId, nextTeamId]
+              : [nextTeamId, winnerId];
+          }
         } else {
           newPlaying = null;
           isActive = false;
@@ -375,6 +407,7 @@ function reducer(state: AppState, action: Action): AppState {
             currentSet: 1,
             playing: newPlaying,
             queue: newQueue,
+            wins: newWins,
             matchHistory: [...game.matchHistory, matchResult],
             isActive,
             scoreHistory: [],
@@ -457,17 +490,40 @@ function reducer(state: AppState, action: Action): AppState {
         winner: setWinner,
       };
 
-      // Rotation: winner stays, loser goes to back of queue
+      // Rotation: loser goes to back of queue
       let newQueue = [...game.queue, loserTeamId];
       let newPlaying: [number, number] | null = game.playing;
       let isActive = true;
 
+      // Check if winner hit maxWins
+      if (newWins[winnerTeamId] >= game.config.maxWins) {
+        // Winner is done, put at top of queue (observer)
+        newQueue = [winnerTeamId, ...newQueue];
+        newPlaying = null;
+      } else {
+        // Winner stays
+        newPlaying = game.playing;
+      }
+
+      // Pull next from queue
       if (newQueue.length >= 1) {
         const nextTeamId = newQueue[0];
         newQueue = newQueue.slice(1);
-        newPlaying = setWinner === 'team1'
-          ? [winnerTeamId, nextTeamId]
-          : [nextTeamId, winnerTeamId];
+        if (!newPlaying) {
+          // Need two teams: first from queue, then next
+          if (newQueue.length >= 1) {
+            const secondTeamId = newQueue[0];
+            newQueue = newQueue.slice(1);
+            newPlaying = [nextTeamId, secondTeamId];
+          } else {
+            newPlaying = [nextTeamId, winnerTeamId];
+          }
+        } else {
+          // Winner stays, challenger comes in
+          newPlaying = setWinner === 'team1'
+            ? [winnerTeamId, nextTeamId]
+            : [nextTeamId, winnerTeamId];
+        }
       } else {
         newPlaying = null;
         isActive = false;

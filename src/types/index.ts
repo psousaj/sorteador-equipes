@@ -44,6 +44,7 @@ export interface GameConfig {
   margin: number;           // diferença mínima pra vencer (ex: 2 = deuce)
   setsToWin: number;        // sets necessários pra vencer (derivado de totalSets)
   totalSets: number;        // total de sets na partida
+  maxWins: number;          // limite de vitórias antes de rodar (sai com X)
 
   // Timer (visual only)
   timerEnabled: boolean;
@@ -57,6 +58,9 @@ export interface GameConfig {
   askSetWinner: boolean;
   darkTheme: boolean;
   orientation: 'normal' | 'inverted';
+
+  // Templates
+  sportTemplate: string;    // 'football' | 'volleyball' | 'basketball' | 'table-tennis' | ''
 }
 
 export interface MatchResult {
@@ -128,6 +132,7 @@ export function defaultGameConfig(): GameConfig {
     margin: 2,
     setsToWin: 2,
     totalSets: 3,
+    maxWins: 5,
     timerEnabled: false,
     timerDuration: 10,
     timerCountdown: false,
@@ -137,5 +142,6 @@ export function defaultGameConfig(): GameConfig {
     askSetWinner: false,
     darkTheme: false,
     orientation: 'normal',
+    sportTemplate: '',
   };
 }

@@ -120,7 +120,7 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
   }
 
   // 1. Handle captain tag — distribute tagged people first
-  if (config.enableCaptain && config.captainTag) {
+  if (config.captainTag) {
     const captainCandidates = everyone.filter(p => p.tags.includes(config.captainTag));
     everyone = everyone.filter(p => !p.tags.includes(config.captainTag));
 
@@ -267,21 +267,16 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
   // 7. Assign captains where missing
   for (let i = 0; i < numTeams; i++) {
     if (!captains[i] && teams[i].length > 0) {
-      if (config.enableCaptain && config.captainTag) {
-        // Pick someone with the captain tag
-        const captainFromTag = teams[i].find(p => p.tags.includes(config.captainTag));
-        if (captainFromTag) {
-          captains[i] = captainFromTag;
-        } else {
-          // Random captain
-          const shuffledTeam = shuffle(teams[i]);
-          captains[i] = shuffledTeam[0];
-        }
-      } else {
-        // Random captain
-        const shuffledTeam = shuffle(teams[i]);
+      // Someone with the captain tag in this team? They're captain.
+      const captainFromTag = teams[i].find(p => p.tags.includes(config.captainTag));
+      if (captainFromTag) {
+        captains[i] = captainFromTag;
+      } else if (config.enableCaptain) {
+        // Random captain (aleatório ON and no tagged person found)
+        const shuffledTeam = shuffle([...teams[i]]);
         captains[i] = shuffledTeam[0];
       }
+      // else: enableCaptain is OFF and no tagged person in team → null (no captain)
     }
   }
 

@@ -271,25 +271,35 @@ export function GameConfigModal({
                 <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest pt-2">Partida</h2>
 
                 <Card>
-                  <SettingRow icon="👑" label="Pontos para vencer o set">
+                  <SettingRow icon="👑" label="Pontos para vencer">
                     <Stepper value={config.pointsToWin} onDecrease={() => adjust('pointsToWin', -1)} onIncrease={() => adjust('pointsToWin', 1)} />
                   </SettingRow>
 
                   <Divider />
 
-                  <SettingRow icon="↔️" label="Margem para vencer o set">
-                    <Stepper value={config.margin} onDecrease={() => adjust('margin', -1)} onIncrease={() => adjust('margin', 1)} />
+                  <SettingRow icon="🏆" label="Limite de vitórias (sai com X)">
+                    <Stepper value={config.maxWins} onDecrease={() => updateConfig({ maxWins: Math.max(1, config.maxWins - 1) })} onIncrease={() => updateConfig({ maxWins: config.maxWins + 1 })} />
                   </SettingRow>
 
-                  <Divider />
+                  {config.setsEnabled && (
+                    <>
+                      <Divider />
 
-                  <SettingRow icon="🏆" label="Total de sets na partida">
-                    <Stepper value={totalSets} onDecrease={() => adjust('totalSets', -1)} onIncrease={() => adjust('totalSets', 1)} />
-                  </SettingRow>
+                      <SettingRow icon="↔️" label="Margem para vencer o set">
+                        <Stepper value={config.margin} onDecrease={() => adjust('margin', -1)} onIncrease={() => adjust('margin', 1)} />
+                      </SettingRow>
 
-                  <div className="text-xs font-medium text-gray-500 pl-8 -mt-1">
-                    Vence quem fizer {derivedSetsToWin} sets
-                  </div>
+                      <Divider />
+
+                      <SettingRow icon="🏆" label="Total de sets na partida">
+                        <Stepper value={totalSets} onDecrease={() => adjust('totalSets', -1)} onIncrease={() => adjust('totalSets', 1)} />
+                      </SettingRow>
+
+                      <div className="text-xs font-medium text-gray-500 pl-8 -mt-1">
+                        Vence quem fizer {derivedSetsToWin} sets
+                      </div>
+                    </>
+                  )}
                 </Card>
 
                 {/* ── Cronômetro ── */}

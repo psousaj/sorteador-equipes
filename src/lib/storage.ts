@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   customTags: 'sorteador:customTags',
   blockedPairs: 'sorteador:blockedPairs',
   gameConfig: 'sorteador:gameConfig',
+  personalizaTimes: 'personalizaTimes',
 } as const;
 
 const MAX_HISTORY = 50;
@@ -124,6 +125,30 @@ export function saveGameConfig(config: GameConfig): void {
 export function getGameConfig(): GameConfig | null {
   try {
     const data = localStorage.getItem(STORAGE_KEYS.gameConfig);
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
+}
+
+interface TeamCustomization {
+  name: string;
+  emoji: string;
+}
+
+interface PersonalizaTimes {
+  teams: Record<number, TeamCustomization>;
+}
+
+export function saveTeamCustomizations(customizations: PersonalizaTimes): void {
+  try {
+    localStorage.setItem('personalizaTimes', JSON.stringify(customizations));
+  } catch {}
+}
+
+export function getTeamCustomizations(): PersonalizaTimes | null {
+  try {
+    const data = localStorage.getItem('personalizaTimes');
     return data ? JSON.parse(data) : null;
   } catch {
     return null;
