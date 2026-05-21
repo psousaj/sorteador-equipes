@@ -316,7 +316,7 @@ export function GameScreen() {
       </div>
 
       {/* ─── BOTTOM BAR: Queue + End Match ─── */}
-      <div className={`${isDark ? 'bg-gray-900/80' : 'bg-black/10 backdrop-blur-sm'} px-4 py-2.5 flex items-center justify-between z-[5]`}>
+      <div className={`${isDark ? 'bg-gray-900/80' : 'bg-black/10 backdrop-blur-sm'} px-4 py-2.5 flex items-center justify-between relative z-20`}>
           {/* Queue */}
           <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto">
             {queueTeams.length > 0 && (

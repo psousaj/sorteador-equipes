@@ -323,9 +323,10 @@ function reducer(state: AppState, action: Action): AppState {
 
         if (!team1Won && !team2Won) {
           // Save history, no winner yet
-          return {
-            ...state,
-            game: {
+      return {
+        ...state,
+        screen: 'gameover',
+        game: {
               ...game,
               scores: newScores,
               scoreHistory: [...game.scoreHistory, [...game.scores] as [number, number]],
@@ -387,7 +388,8 @@ function reducer(state: AppState, action: Action): AppState {
             }
           } else {
             // Winner stays, challenger comes in
-            newPlaying = winner === 'team1'
+            const winnerIdx = newScores[0] >= pointsToWin ? 0 : 1;
+            newPlaying = winnerIdx === 0
               ? [winnerId, nextTeamId]
               : [nextTeamId, winnerId];
           }
@@ -522,7 +524,8 @@ function reducer(state: AppState, action: Action): AppState {
           }
         } else {
           // Winner stays, challenger comes in
-          newPlaying = setWinner === 'team1'
+          const winnerIdx = newScores[0] >= game.config.pointsToWin ? 0 : 1;
+          newPlaying = winnerIdx === 0
             ? [winnerTeamId, nextTeamId]
             : [nextTeamId, winnerTeamId];
         }
@@ -670,6 +673,7 @@ function reducer(state: AppState, action: Action): AppState {
 
       return {
         ...state,
+        screen: 'gameover',
         game: {
           ...game,
           scores: [0, 0],
