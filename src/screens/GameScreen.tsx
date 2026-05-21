@@ -338,8 +338,8 @@ export function GameScreen() {
 
           {/* End match button */}
           <button
-            onClick={() => dispatch({ type: 'END_MATCH' })}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-bold text-xs bg-gradient-to-r from-red-500 to-rose-600 text-white hover:shadow-lg transition-all shadow-md shrink-0 ml-2"
+            onClick={(e) => { e.stopPropagation(); dispatch({ type: 'END_MATCH' }); }}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg font-bold text-[11px] bg-gradient-to-r from-red-500 to-rose-600 text-white hover:shadow-lg transition-all shadow-md shrink-0 ml-2"
           >
             🏁 Encerrar
           </button>
