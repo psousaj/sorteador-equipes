@@ -905,6 +905,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const names = raw
       .split(/[,\n]+/)
       .map(n => n.trim())
+      // Remove leading numbers with separators: "1-", "2.", "3)", "4-", "05-", etc.
+      .map(n => n.replace(/^\d+[\.\)\-\s]+/, ''))
+      // Remove trailing checkmarks and common emojis: ✅ ❌ ✔️ ✗ 🚫 etc.
+      .map(n => n.replace(/[\u{2700}-\u{27BF}\u{2600}-\u{26FF}\u{1F000}-\u{1FFFF}\u{FE00}-\u{FE0F}✅❌✔️✗🚫]+$/u, '').trim())
       .filter(Boolean);
 
     if (names.length === 0) return;
