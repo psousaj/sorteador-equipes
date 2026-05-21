@@ -2,17 +2,20 @@ import { useState, useEffect } from 'react';
 import { Copy, Check, Shuffle, ArrowLeft, Share2, Play, X, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
-import { TeamCard } from '../components/TeamCard';
 import type { GameConfig, Team } from '../types';
 import { defaultGameConfig, randomTeamEmoji, TEAM_EMOJIS } from '../types';
 import { getGameConfig, saveGameConfig, saveTeamCustomizations, getTeamCustomizations } from '../lib/storage';
-import { SPORTS, CAPTAIN_TAG } from '../lib/sports';
 
 export function ResultScreen() {
   const { state, dispatch, startDraw } = useApp();
   const { currentResult } = state;
   const [copied, setCopied] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Load game config from localStorage
   const [gameConfig, setGameConfigState] = useState<GameConfig>(() => {
@@ -139,7 +142,7 @@ export function ResultScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div className="min-h-dvh bg-gradient-to-br from-orange-50 via-white to-purple-50">
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -285,56 +288,6 @@ export function ResultScreen() {
               </motion.div>
             );
           })}
-        </motion.div>
-
-        {/* Sport Template Selector */}
-        <motion.div
-          className="max-w-xl mx-auto mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 text-center">
-            Template de Esporte
-          </label>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {SPORTS.map(sport => (
-              <button
-                key={sport.id}
-                onClick={() => {
-                  const newConfig = { ...gameConfig, sportTemplate: sport.id };
-                  setGameConfigState(newConfig);
-                  saveGameConfig(newConfig);
-                }}
-                className={`
-                  flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border
-                  ${gameConfig.sportTemplate === sport.id
-                    ? 'bg-brand text-white border-brand shadow-md'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                  }
-                `}
-              >
-                <span className="text-base">{sport.emoji}</span>
-                {sport.name}
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                const newConfig = { ...gameConfig, sportTemplate: '' };
-                setGameConfigState(newConfig);
-                saveGameConfig(newConfig);
-              }}
-              className={`
-                flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border
-                ${!gameConfig.sportTemplate
-                  ? 'bg-gray-200 text-gray-700 border-gray-300 shadow-md'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                }
-              `}
-            >
-              ✗ Nenhum
-            </button>
-          </div>
         </motion.div>
 
         {/* Action buttons */}

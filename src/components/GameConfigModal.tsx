@@ -26,7 +26,7 @@ export function GameConfigModal({
   onOpenTheme,
 }: Props) {
   const [editingTeamIndex, setEditingTeamIndex] = useState<number | null>(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [emojiPickerTeamIndex, setEmojiPickerTeamIndex] = useState<number | null>(null);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -66,7 +66,7 @@ export function GameConfigModal({
 
   const openTeamEdit = (index: number) => {
     setEditingTeamIndex(index);
-    setShowEmojiPicker(false);
+    setEmojiPickerTeamIndex(null);
   };
 
   const updateTeam = (index: number, name: string, emoji: string) => {
@@ -78,7 +78,7 @@ export function GameConfigModal({
   const onEmojiClick = (emojiData: EmojiClickData) => {
     if (editingTeamIndex !== null) {
       updateTeam(editingTeamIndex, teams[editingTeamIndex].name, emojiData.emoji);
-      setShowEmojiPicker(false);
+      setEmojiPickerTeamIndex(null);
     }
   };
 
@@ -206,71 +206,88 @@ export function GameConfigModal({
                 <div className="space-y-2">
                   {teams.map((team, idx) => {
                     const isLeft = idx === 0;
+                    const isEditing = editingTeamIndex === idx;
+                    const showEmoji = emojiPickerTeamIndex === idx;
                     return (
-                      <button
-                        key={team.id}
-                        onClick={() => openTeamEdit(idx)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white transition-all hover:brightness-110 ${
-                          isLeft ? 'bg-[#2979D0]' : 'bg-[#C0392B]'
-                        }`}
-                      >
-                        <span className="text-2xl">{team.emoji || '🏳️'}</span>
-                        <div className="flex-1 text-left">
-                          <div className="text-xs font-semibold text-white/70">
-                            {isLeft ? 'Player 1' : 'Player 2'}
+                      <div key={team.id} className="space-y-1">
+                        <button
+                          onClick={() => {
+                            setEditingTeamIndex(isEditing ? null : idx);
+                            setEmojiPickerTeamIndex(null);
+                          }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-white transition-all hover:brightness-110 ${
+                            isLeft ? 'bg-[#2979D0]' : 'bg-[#C0392B]'
+                          }`}
+                        >
+                          <span className="text-2xl">{team.emoji || '🏳️'}</span>
+                          <div className="flex-1 text-left">
+                            <div className="text-xs font-semibold text-white/70">
+                              {isLeft ? 'Player 1' : 'Player 2'}
+                            </div>
+                            <div className="text-sm font-bold text-white">
+                              {team.name || (isLeft ? 'Player 1' : 'Player 2')}
+                            </div>
                           </div>
-                          <div className="text-sm font-bold text-white">
-                            {team.name || (isLeft ? 'Player 1' : 'Player 2')}
-                          </div>
-                        </div>
-                        <span className="text-white/60 text-lg leading-none">✎</span>
-                      </button>
+                          <span className="text-white/60 text-lg leading-none">{isEditing ? '−' : '✎'}</span>
+                        </button>
+
+                        {/* Inline editor below the team card */}
+                        <AnimatePresence>
+                          {isEditing && (
+                            <motion.div
+                              className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3 shadow-sm"
+                              initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                              animate={{ height: 'auto', opacity: 1, marginTop: 4 }}
+                              exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-gray-700 shrink-0">Nome:</span>
+                                <input
+                                  type="text"
+                                  value={team.name}
+                                  onChange={e => updateTeam(idx, e.target.value, team.emoji)}
+                                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:ring-2 focus:ring-brand focus:border-transparent bg-gray-50"
+                                  placeholder={isLeft ? 'Player 1' : 'Player 2'}
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-gray-700 shrink-0">Emoji:</span>
+                                <span className="text-3xl">{team.emoji || '🏳️'}</span>
+                                <button
+                                  onClick={() => setEmojiPickerTeamIndex(showEmoji ? null : idx)}
+                                  className="text-xs font-semibold text-brand hover:text-brand/80 transition-colors"
+                                >
+                                  {showEmoji ? 'Fechar' : 'Trocar'}
+                                </button>
+                              </div>
+                              {showEmoji && (
+                                <div className="w-full max-w-[300px] mx-auto [&_.EmojiPickerReact]:!w-full [&_.EmojiPickerReact]:!h-[280px]">
+                                  <EmojiPicker onEmojiClick={(emojiData) => {
+                                    updateTeam(idx, team.name, emojiData.emoji);
+                                    setEmojiPickerTeamIndex(null);
+                                  }} />
+                                </div>
+                              )}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
                     );
                   })}
                 </div>
-
-                {/* Team editor sub-modal */}
-                <AnimatePresence>
-                  {editingTeamIndex !== null && (
-                    <motion.div
-                      className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3 shadow-sm"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-gray-700 shrink-0">Nome:</span>
-                        <input
-                          type="text"
-                          value={teams[editingTeamIndex].name}
-                          onChange={e => updateTeam(editingTeamIndex, e.target.value, teams[editingTeamIndex].emoji)}
-                          className="flex-1 px-3 py-1.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:ring-2 focus:ring-brand focus:border-transparent bg-gray-50"
-                          placeholder={`Time ${teams[editingTeamIndex].id}`}
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-gray-700 shrink-0">Emoji:</span>
-                        <span className="text-3xl">{teams[editingTeamIndex].emoji || '🏳️'}</span>
-                        <button
-                          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                          className="text-xs font-semibold text-brand hover:text-brand/80 transition-colors"
-                        >
-                          {showEmojiPicker ? 'Fechar' : 'Trocar'}
-                        </button>
-                      </div>
-                      {showEmojiPicker && (
-                        <div className="w-full max-w-[300px] mx-auto [&_.EmojiPickerReact]:!w-full [&_.EmojiPickerReact]:!h-[280px]">
-                          <EmojiPicker onEmojiClick={onEmojiClick} />
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {/* ── Partida ── */}
                 <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest pt-2">Partida</h2>
 
                 <Card>
+                  {/* Sets toggle */}
+                  <SettingRow icon="🎯" label="Ativar sets">
+                    <Toggle checked={config.setsEnabled} onChange={v => updateConfig({ setsEnabled: v })} />
+                  </SettingRow>
+
+                  <Divider />
+
                   <SettingRow icon="👑" label="Pontos para vencer">
                     <Stepper value={config.pointsToWin} onDecrease={() => adjust('pointsToWin', -1)} onIncrease={() => adjust('pointsToWin', 1)} />
                   </SettingRow>

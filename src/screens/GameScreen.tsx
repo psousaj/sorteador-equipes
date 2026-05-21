@@ -136,7 +136,7 @@ export function GameScreen() {
     : { background: 'linear-gradient(90deg, #2979D0 50%, #C0392B 50%)' };
 
   return (
-    <div className={`h-screen w-screen flex flex-col overflow-hidden select-none relative ${isDark ? '' : ''}`} style={bgStyle}>
+    <div className={`h-dvh w-screen flex flex-col overflow-hidden select-none relative ${isDark ? '' : ''}`} style={bgStyle}>
       {/* ─── TOP BAR: Timer + Set counter ─── */}
       {game.config.timerEnabled && (
         <div className="flex flex-col items-center pt-4 pb-1 relative z-10">
@@ -282,13 +282,13 @@ export function GameScreen() {
       {/* ─── EXPANDABLE CENTER MENU ─── */}
       <div className="absolute left-1/2 -translate-x-1/2 bottom-20 z-10 flex flex-col items-center">
         <AnimatePresence>
-          {menuExpanded ? (
+          {menuExpanded && (
             <motion.div
               key="expanded"
               initial={{ opacity: 0, scale: 0.9, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 10 }}
-              className="bg-white/95 backdrop-blur rounded-2xl px-3 py-3 shadow-xl border border-white/30"
+              className="bg-white/95 backdrop-blur rounded-2xl px-3 py-3 shadow-xl border border-white/30 mb-2"
             >
               <div className="grid grid-cols-3 gap-1.5">
                 <MenuButton icon="⏪" label="Reiniciar" onClick={() => dispatch({ type: 'RESTART_MATCH' })} />
@@ -299,25 +299,24 @@ export function GameScreen() {
                 <MenuButton icon="⚙️" label="Config" onClick={() => setShowConfig(true)} />
               </div>
             </motion.div>
-          ) : (
-            <motion.button
-              key="collapsed"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              onClick={() => setMenuExpanded(true)}
-              className="bg-white/95 backdrop-blur rounded-full w-10 h-10 flex items-center justify-center shadow-lg border border-white/30 hover:bg-white transition-colors"
-              title="Abrir menu"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600">
-                <path d="M6 9l6 6 6-6" />
-              </svg>
-            </motion.button>
           )}
         </AnimatePresence>
 
+        {/* Toggle button — always visible */}
+        <motion.button
+          onClick={() => setMenuExpanded(p => !p)}
+          className="bg-white/95 backdrop-blur rounded-full w-10 h-10 flex items-center justify-center shadow-lg border border-white/30 hover:bg-white transition-colors"
+          title={menuExpanded ? 'Fechar menu' : 'Abrir menu'}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 transition-transform duration-200"
+            style={{ transform: menuExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </motion.button>
+
         {/* Current set indicator below menu */}
-        {game.config.setsEnabled && menuExpanded && (
+        {game.config.setsEnabled && (
           <div className="text-xs font-semibold text-white/70 mt-1.5">
             Set {game.currentSet}
           </div>
@@ -325,8 +324,7 @@ export function GameScreen() {
       </div>
 
       {/* ─── BOTTOM BAR: Queue + End Match ─── */}
-      {!menuExpanded && (
-        <div className={`${isDark ? 'bg-gray-900/80' : 'bg-black/10 backdrop-blur-sm'} px-4 py-2.5 flex items-center justify-between z-[5]`}>
+      <div className={`${isDark ? 'bg-gray-900/80' : 'bg-black/10 backdrop-blur-sm'} px-4 py-2.5 flex items-center justify-between z-[5]`}>
           {/* Queue */}
           <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto">
             {queueTeams.length > 0 && (
@@ -354,7 +352,6 @@ export function GameScreen() {
             🏁 Encerrar
           </button>
         </div>
-      )}
 
       {/* ─── OVERLAY MODALS ─── */}
       <HistoryDropdown
