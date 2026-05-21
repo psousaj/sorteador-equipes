@@ -22,10 +22,11 @@ export function HomeScreen() {
   const { state, dispatch, parseNames, startDraw } = useApp();
   const { people, teamSize, rules, enableCaptain, soundEnabled, importedNames, drawError } = state;
 
-  const [customTags, setCustomTags] = useState<string[]>(() => {
+  const [userTags, setUserTags] = useState<string[]>(() => {
     const saved = getCustomTags();
     return saved.length > 0 ? saved : [];
   });
+  const [templateTags, setTemplateTags] = useState<string[]>([]);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [captainTooltipOpen, setCaptainTooltipOpen] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
@@ -38,10 +39,10 @@ export function HomeScreen() {
   const captainTooltipRef = useRef<HTMLDivElement>(null!);
   const nameInputRef = useRef<HTMLInputElement>(null!);
 
-  // Save custom tags to localStorage whenever they change
+  // Save user tags to localStorage whenever they change
   useEffect(() => {
-    if (customTags.length > 0) saveCustomTags(customTags);
-  }, [customTags]);
+    if (userTags.length > 0) saveCustomTags(userTags);
+  }, [userTags]);
 
   // Close captain tooltip on click outside
   useEffect(() => {
@@ -69,9 +70,18 @@ export function HomeScreen() {
   }, [drawError]);
 
   // Computed values
+  // All tags = user tags first, then template tags
+  const allTags = useMemo(() => [...userTags, ...templateTags], [userTags, templateTags]);
+
+  // Available tags for rules (default tags + user tags + template tags)
   const availableRuleTags = useMemo(() => {
-    return [...DEFAULT_TAGS.map(t => ({ value: t.value, label: t.label })), ...customTags.map(t => ({ value: t, label: t }))];
-  }, [customTags]);
+    return [...DEFAULT_TAGS.map(t => ({ value: t.value, label: t.label })), ...allTags.map(t => ({ value: t, label: t }))];
+  }, [allTags]);
+
+  // Available tags for person assignment (default + user + template)
+  const personTags = useMemo(() => {
+    return [...DEFAULT_TAGS.map(t => t.value), ...allTags];
+  }, [allTags]);
 
   const numTeams = useMemo(() => {
     if (people.length === 0 || teamSize === 0) return 0;
@@ -94,10 +104,6 @@ export function HomeScreen() {
     });
     return pairs;
   }, [people]);
-
-  const personTags = useMemo(() => {
-    return [...DEFAULT_TAGS.map(t => t.value), ...customTags];
-  }, [customTags]);
 
   // Handlers
   const handleImport = () => {
@@ -122,7 +128,7 @@ export function HomeScreen() {
   };
 
   const handleAddCustomTag = (id: string, tag: string) => {
-    if (!customTags.includes(tag)) setCustomTags(prev => [...prev, tag]);
+    if (!userTags.includes(tag)) setUserTags(prev => [...prev, tag]);
     dispatch({ type: 'ADD_TAG_TO_PERSON', payload: { id, tag } });
   };
 
@@ -254,7 +260,7 @@ export function HomeScreen() {
                 onShowBlockedPanel={() => setShowBlockedPanel(!showBlockedPanel)}
                 showBlockedPanel={showBlockedPanel}
                 personTags={personTags}
-                customTags={customTags}
+                customTags={allTags}
                 onGenderChange={handleGenderChange}
                 onToggleTag={handleToggleTag}
                 onAddCustomTag={handleAddCustomTag}
@@ -302,7 +308,7 @@ export function HomeScreen() {
                       if (sport.hasCaptain && !newTags.includes(CAPTAIN_TAG)) {
                         newTags.push(CAPTAIN_TAG);
                       }
-                      setCustomTags(newTags);
+                      setTemplateTags(newTags);
                       setSelectedSport(sport.id);
                     }}
                     className={`
@@ -317,17 +323,22 @@ export function HomeScreen() {
                     {sport.name}
                   </button>
                 ))}
-                {selectedSport && (
-                  <button
-                    onClick={() => {
-                      setCustomTags([]);
-                      setSelectedSport(null);
-                    }}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border bg-white text-gray-400 border-gray-200 hover:border-red-300 hover:text-red-500"
-                  >
-                    ✗ Limpar
-                  </button>
-                )}
+                {/* Sem Template — default */}
+                <button
+                  onClick={() => {
+                    setTemplateTags([]);
+                    setSelectedSport(null);
+                  }}
+                  className={`
+                    flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border
+                    ${!selectedSport
+                      ? 'bg-brand text-white border-brand shadow-sm'
+                      : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                    }
+                  `}
+                >
+                  ✗ Sem Template
+                </button>
               </div>
               {selectedSport && (
                 <p className="text-[10px] text-gray-400">
