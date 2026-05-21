@@ -831,6 +831,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Auto-save people whenever they change (not just on draw)
+  useEffect(() => {
+    if (state.people.length > 0) {
+      const drawConfig: DrawConfig = {
+        teamSize: state.teamSize,
+        rules: state.rules,
+        captainTag: state.captainTag,
+        enableCaptain: state.enableCaptain,
+        soundEnabled: state.soundEnabled,
+      };
+      saveLastConfig(drawConfig, state.people);
+    }
+  }, [state.people, state.teamSize, state.rules, state.captainTag, state.enableCaptain, state.soundEnabled]);
+
   // Restore blocked pairs from localStorage
   useEffect(() => {
     if (state.people.length === 0) return;
