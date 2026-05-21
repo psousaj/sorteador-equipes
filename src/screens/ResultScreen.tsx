@@ -290,51 +290,57 @@ export function ResultScreen() {
           })}
         </motion.div>
 
-        {/* Action buttons */}
+        {/* Action buttons - two rows */}
         <motion.div
-          className="flex flex-wrap gap-3 justify-center"
+          className="flex flex-col gap-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <button
-            onClick={handleCopy}
-            className={`
-              flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
-              transition-all duration-300 shadow-md
-              ${copied
-                ? 'bg-green-500 text-white'
-                : 'bg-white text-gray-700 hover:shadow-lg border border-gray-200'
-              }
-            `}
-          >
-            {copied ? <Check size={18} /> : <Copy size={18} />}
-            {copied ? 'Copiado!' : '📋 Copiar pra WhatsApp'}
-          </button>
+          {/* Row 1: Draw again + Start match */}
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button
+              onClick={handleRedraw}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-brand to-purple-600 text-white hover:shadow-xl transition-all shadow-md"
+            >
+              <Shuffle size={18} />
+              Sortear de novo
+            </button>
 
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-white text-gray-700 hover:shadow-lg border border-gray-200 transition-all shadow-md"
-          >
-            <Share2 size={18} />
-            Compartilhar
-          </button>
+            <button
+              onClick={() => setShowGameModal(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-xl transition-all shadow-md"
+            >
+              <Play size={18} />
+              Iniciar Partida
+            </button>
+          </div>
 
-          <button
-            onClick={handleRedraw}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-brand to-purple-600 text-white hover:shadow-xl transition-all shadow-md"
-          >
-            <Shuffle size={18} />
-            Sortear de novo
-          </button>
+          {/* Row 2: Share + Copy */}
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-white text-gray-700 hover:shadow-lg border border-gray-200 transition-all shadow-md"
+            >
+              <Share2 size={18} />
+              Compartilhar
+            </button>
 
-          <button
-            onClick={() => setShowGameModal(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-xl transition-all shadow-md"
-          >
-            <Play size={18} />
-            Iniciar Partida
-          </button>
+            <button
+              onClick={handleCopy}
+              className={`
+                flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm
+                transition-all duration-300 shadow-md
+                ${copied
+                  ? 'bg-green-500 text-white'
+                  : 'bg-white text-gray-700 hover:shadow-lg border border-gray-200'
+                }
+              `}
+            >
+              {copied ? <Check size={18} /> : <Copy size={18} />}
+              {copied ? 'Copiado!' : '📋 Copiar pra WhatsApp'}
+            </button>
+          </div>
         </motion.div>
 
         {/* Game Config Modal */}
