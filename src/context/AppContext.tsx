@@ -641,9 +641,7 @@ function reducer(state: AppState, action: Action): AppState {
       const { game } = state;
       if (!game.playing || !game.isActive) return state;
 
-      // Determine set/winner based on current scores
       if (game.scores[0] === game.scores[1]) {
-        // Tie — nothing to do
         return state;
       }
 
@@ -653,81 +651,9 @@ function reducer(state: AppState, action: Action): AppState {
       const winnerTeam = game.allTeams.find(t => t.id === winnerId)!;
       const loserTeam = game.allTeams.find(t => t.id === loserId)!;
 
-      if (!game.config.setsEnabled) {
-        // ── Traditional mode ─────────────────────────────
-        const matchResult: MatchResult = {
-          id: uuidv4(),
-          team1Id: game.playing[0],
-          team2Id: game.playing[1],
-          team1Name: winnerTeam.name,
-          team2Name: loserTeam.name,
-          score1: game.scores[0],
-          score2: game.scores[1],
-          setNumber: 1,
-          setScores1: [game.scores[0]],
-          setScores2: [game.scores[1]],
-          winner: winnerSide,
-        };
+      const finalScores1 = [...game.setScores1, game.scores[0]];
+      const finalScores2 = [...game.setScores2, game.scores[1]];
 
-        // Rotation: winner stays, loser to back of queue
-        let newQueue = [...game.queue, loserId];
-        let newPlaying: [number, number] | null = game.playing;
-        let isActive = true;
-
-        if (newQueue.length >= 1) {
-          const nextTeamId = newQueue[0];
-          newQueue = newQueue.slice(1);
-          newPlaying = winnerSide === 'team1'
-            ? [winnerId, nextTeamId]
-            : [nextTeamId, winnerId];
-        } else {
-          newPlaying = null;
-          isActive = false;
-        }
-
-        return {
-          ...state,
-          game: {
-            ...game,
-            scores: [0, 0],
-            setScores1: [],
-            setScores2: [],
-            currentSet: 1,
-            playing: newPlaying,
-            queue: newQueue,
-            matchHistory: [...game.matchHistory, matchResult],
-            isActive,
-            scoreHistory: [],
-          },
-        };
-      }
-
-      // ── Sets mode ──────────────────────────────────────
-      // End the current set with whoever has more points
-      const newSetScores1 = [...game.setScores1, game.scores[0]];
-      const newSetScores2 = [...game.setScores2, game.scores[1]];
-      const newWins = { ...game.wins };
-      newWins[winnerId] = (newWins[winnerId] || 0) + 1;
-
-      const newCurrentSet = game.currentSet + 1;
-
-      if (newWins[winnerId] < game.config.setsToWin) {
-        // Same teams continue, new set
-        return {
-          ...state,
-          game: {
-            ...game,
-            scores: [0, 0],
-            currentSet: newCurrentSet,
-            setScores1: newSetScores1,
-            setScores2: newSetScores2,
-            wins: newWins,
-            scoreHistory: [],
-          },
-        };
-      }
-
-      // Match was won
       const matchResult: MatchResult = {
         id: uuidv4(),
         team1Id: game.playing[0],
@@ -737,40 +663,23 @@ function reducer(state: AppState, action: Action): AppState {
         score1: game.scores[0],
         score2: game.scores[1],
         setNumber: game.currentSet,
-        setScores1: newSetScores1,
-        setScores2: newSetScores2,
+        setScores1: finalScores1,
+        setScores2: finalScores2,
         winner: winnerSide,
       };
-
-      // Rotation: winner stays, loser to back of queue
-      let newQueue = [...game.queue, loserId];
-      let newPlaying: [number, number] | null = game.playing;
-      let isActive = true;
-
-      if (newQueue.length >= 1) {
-        const nextTeamId = newQueue[0];
-        newQueue = newQueue.slice(1);
-        newPlaying = winnerSide === 'team1'
-          ? [winnerId, nextTeamId]
-          : [nextTeamId, winnerId];
-      } else {
-        newPlaying = null;
-        isActive = false;
-      }
 
       return {
         ...state,
         game: {
           ...game,
           scores: [0, 0],
-          currentSet: 1,
           setScores1: [],
           setScores2: [],
-          playing: newPlaying,
-          queue: newQueue,
-          wins: newWins,
+          currentSet: 1,
+          playing: null,
+          queue: [],
           matchHistory: [...game.matchHistory, matchResult],
-          isActive,
+          isActive: false,
           scoreHistory: [],
         },
       };

@@ -23,6 +23,49 @@ export function GameOverScreen() {
           </p>
         </motion.div>
 
+        {/* Wins Ranking */}
+        {Object.keys(game.wins).length > 0 && (
+          <motion.div
+            className="w-full max-w-md mb-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-1 mb-3">
+              Ranking de Vitórias
+            </h2>
+            <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-2">
+              {Object.entries(game.wins)
+                .sort(([, a], [, b]) => b - a)
+                .map(([teamId, wins], idx) => {
+                  const team = game.allTeams.find(t => t.id === Number(teamId));
+                  if (!team) return null;
+                  const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : null;
+                  return (
+                    <div
+                      key={teamId}
+                      className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50"
+                    >
+                      <div className="flex items-center gap-2">
+                        {medal ? (
+                          <span className="text-base w-6 text-center">{medal}</span>
+                        ) : (
+                          <span className="text-base w-6 text-center text-gray-300">•</span>
+                        )}
+                        <span className="text-sm font-medium text-gray-700">
+                          {team.emoji} {team.name}
+                        </span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-600 tabular-nums">
+                        {wins} {wins === 1 ? 'vitória' : 'vitórias'}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
+          </motion.div>
+        )}
+
         {/* Match History */}
         <motion.div
           className="w-full max-w-md space-y-3 mb-8"
