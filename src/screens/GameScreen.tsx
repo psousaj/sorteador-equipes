@@ -138,8 +138,7 @@ export function GameScreen() {
   return (
     <div className={`h-dvh w-screen flex flex-col overflow-hidden select-none relative ${isDark ? '' : ''}`} style={bgStyle}>
       {/* ─── TOP BAR: Timer + Set counter ─── */}
-      {game.config.timerEnabled && (
-        <div className="flex flex-col items-center pt-4 pb-1 relative z-10">
+      <div className="flex flex-col items-center pt-4 pb-1 relative z-10">
           {/* Timer capsule */}
           <div className="inline-flex items-center gap-0 bg-white/95 backdrop-blur rounded-full px-4 py-2 shadow-lg border border-white/30">
             <button
@@ -189,7 +188,6 @@ export function GameScreen() {
             </div>
           )}
         </div>
-      )}
 
       {/* ─── MAIN SPLIT AREA ─── */}
       <div className="flex-1 flex relative">
@@ -226,12 +224,9 @@ export function GameScreen() {
             {leftScore}
           </div>
 
-          {/* Wins badge */}
-          {game.config.setsEnabled && leftWins > 0 && (
-            <div className="absolute bottom-4 right-4 text-white/70 text-xs font-bold bg-black/10 px-2.5 py-0.5 rounded-full">
-              {leftWins} set{leftWins > 1 ? 's' : ''}
-            </div>
-          )}
+          <div className="absolute top-3 left-3 text-white font-bold text-sm bg-black/20 px-2.5 py-0.5 rounded-full">
+            🏆 {leftWins} vitórias
+          </div>
         </div>
 
         {/* Vertical divider */}
@@ -270,12 +265,9 @@ export function GameScreen() {
             {rightScore}
           </div>
 
-          {/* Wins badge */}
-          {game.config.setsEnabled && rightWins > 0 && (
-            <div className="absolute bottom-4 left-4 text-white/70 text-xs font-bold bg-black/10 px-2.5 py-0.5 rounded-full">
-              {rightWins} set{rightWins > 1 ? 's' : ''}
-            </div>
-          )}
+          <div className="absolute top-3 right-3 text-white font-bold text-sm bg-black/20 px-2.5 py-0.5 rounded-full">
+            🏆 {rightWins} vitórias
+          </div>
         </div>
       </div>
 

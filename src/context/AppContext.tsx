@@ -365,8 +365,7 @@ function reducer(state: AppState, action: Action): AppState {
 
         // Check if winner hit maxWins
         if (newWins[winnerId] >= game.config.maxWins) {
-          // Winner is done, put at top of queue (observer)
-          newQueue = [winnerId, ...newQueue];
+          // Winner is done
           newPlaying = null;
         } else {
           // Winner stays
@@ -395,6 +394,10 @@ function reducer(state: AppState, action: Action): AppState {
         } else {
           newPlaying = null;
           isActive = false;
+        }
+
+        if (newWins[winnerId] >= game.config.maxWins) {
+          newQueue = [winnerId, ...newQueue];
         }
 
         return {
@@ -497,8 +500,7 @@ function reducer(state: AppState, action: Action): AppState {
 
       // Check if winner hit maxWins
       if (newWins[winnerTeamId] >= game.config.maxWins) {
-        // Winner is done, put at top of queue (observer)
-        newQueue = [winnerTeamId, ...newQueue];
+        // Winner is done
         newPlaying = null;
       } else {
         // Winner stays
@@ -527,6 +529,10 @@ function reducer(state: AppState, action: Action): AppState {
       } else {
         newPlaying = null;
         isActive = false;
+      }
+
+      if (newWins[winnerTeamId] >= game.config.maxWins) {
+        newQueue = [winnerTeamId, ...newQueue];
       }
 
       return {

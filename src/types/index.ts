@@ -133,7 +133,7 @@ export function defaultGameConfig(): GameConfig {
     setsToWin: 2,
     totalSets: 3,
     maxWins: 5,
-    timerEnabled: false,
+    timerEnabled: true,
     timerDuration: 10,
     timerCountdown: false,
     timerSound: true,
