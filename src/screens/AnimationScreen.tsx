@@ -64,7 +64,7 @@ export function AnimationScreen() {
   })));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-dvh bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex flex-col items-center justify-center relative overflow-hidden">
       {/* Particles background */}
       <div className="absolute inset-0 opacity-20">
         {Array.from({ length: 20 }).map((_, i) => (

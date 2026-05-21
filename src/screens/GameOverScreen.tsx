@@ -7,7 +7,7 @@ export function GameOverScreen() {
   const { game } = state;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100 flex flex-col">
+    <div className="min-h-dvh bg-gradient-to-br from-slate-50 to-gray-100 flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <motion.div
           className="text-center max-w-lg w-full"

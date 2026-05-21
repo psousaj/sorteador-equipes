@@ -210,7 +210,7 @@ export function HomeScreen() {
   const isPeopleReady = people.length >= teamSize && teamSize > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div className="min-h-dvh bg-gradient-to-br from-orange-50 via-white to-purple-50">
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Header */}
         <header className="flex items-center justify-between mb-6">
