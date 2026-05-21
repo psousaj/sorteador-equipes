@@ -22,7 +22,11 @@ export function HomeScreen() {
   const { state, dispatch, parseNames, startDraw } = useApp();
   const { people, teamSize, rules, enableCaptain, soundEnabled, importedNames, drawError } = state;
 
-  const [customTags, setCustomTags] = useState<string[]>([]);
+  const [customTags, setCustomTags] = useState<string[]>(() => {
+    const saved = getCustomTags();
+    return saved.length > 0 ? saved : [];
+  });
+  const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [captainTooltipOpen, setCaptainTooltipOpen] = useState(false);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [blockModePersonId, setBlockModePersonId] = useState<string | null>(null);
@@ -33,12 +37,6 @@ export function HomeScreen() {
   const textareaRef = useRef<HTMLTextAreaElement>(null!);
   const captainTooltipRef = useRef<HTMLDivElement>(null!);
   const nameInputRef = useRef<HTMLInputElement>(null!);
-
-  // Load custom tags from localStorage on mount
-  useEffect(() => {
-    const saved = getCustomTags();
-    if (saved.length > 0) setCustomTags(saved);
-  }, []);
 
   // Save custom tags to localStorage whenever they change
   useEffect(() => {
@@ -300,20 +298,17 @@ export function HomeScreen() {
                   <button
                     key={sport.id}
                     onClick={() => {
-                      const newCustomTags = [...customTags];
-                      sport.tags.forEach(tag => {
-                        if (!newCustomTags.includes(tag)) newCustomTags.push(tag);
-                      });
-                      if (sport.hasCaptain && !newCustomTags.includes(CAPTAIN_TAG)) {
-                        newCustomTags.push(CAPTAIN_TAG);
+                      const newTags = [...sport.tags];
+                      if (sport.hasCaptain && !newTags.includes(CAPTAIN_TAG)) {
+                        newTags.push(CAPTAIN_TAG);
                       }
-                      setCustomTags(newCustomTags);
-                      saveCustomTags(newCustomTags);
+                      setCustomTags(newTags);
+                      setSelectedSport(sport.id);
                     }}
                     className={`
                       flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border
-                      ${customTags.some(t => sport.tags.includes(t) || (sport.hasCaptain && t === CAPTAIN_TAG))
-                        ? 'bg-brand/10 text-brand border-brand/30'
+                      ${selectedSport === sport.id
+                        ? 'bg-brand text-white border-brand shadow-sm'
                         : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
                       }
                     `}
@@ -322,10 +317,21 @@ export function HomeScreen() {
                     {sport.name}
                   </button>
                 ))}
+                {selectedSport && (
+                  <button
+                    onClick={() => {
+                      setCustomTags([]);
+                      setSelectedSport(null);
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border bg-white text-gray-400 border-gray-200 hover:border-red-300 hover:text-red-500"
+                  >
+                    ✗ Limpar
+                  </button>
+                )}
               </div>
-              {customTags.length > 0 && (
+              {selectedSport && (
                 <p className="text-[10px] text-gray-400">
-                  Tags do template aparecem ao clicar nas pessoas ✨
+                  Tags disponíveis para marcar nas pessoas ✨
                 </p>
               )}
             </div>
