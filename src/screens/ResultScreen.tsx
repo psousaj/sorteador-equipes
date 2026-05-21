@@ -316,16 +316,8 @@ export function ResultScreen() {
             </button>
           </div>
 
-          {/* Row 2: Share + Copy */}
+          {/* Row 2: Copy + Share */}
           <div className="flex flex-wrap gap-3 justify-center">
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-white text-gray-700 hover:shadow-lg border border-gray-200 transition-all shadow-md"
-            >
-              <Share2 size={18} />
-              Compartilhar
-            </button>
-
             <button
               onClick={handleCopy}
               className={`
@@ -339,6 +331,14 @@ export function ResultScreen() {
             >
               {copied ? <Check size={18} /> : <Copy size={18} />}
               {copied ? 'Copiado!' : '📋 Copiar pra WhatsApp'}
+            </button>
+
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm bg-white text-gray-700 hover:shadow-lg border border-gray-200 transition-all shadow-md"
+            >
+              <Share2 size={18} />
+              Compartilhar
             </button>
           </div>
         </motion.div>
