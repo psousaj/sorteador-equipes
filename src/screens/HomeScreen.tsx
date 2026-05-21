@@ -399,6 +399,7 @@ export function HomeScreen() {
         onNameChange={setEditNameValue}
         onNameKeyDown={handleNameKeyDown}
         onRemove={handleRemovePerson}
+        onRemoveTag={handleToggleTag}
         nameInputRef={nameInputRef}
       />
 

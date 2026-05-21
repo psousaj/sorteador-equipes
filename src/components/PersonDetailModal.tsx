@@ -12,6 +12,7 @@ interface PersonDetailModalProps {
   onNameChange: (value: string) => void;
   onNameKeyDown: (e: React.KeyboardEvent) => void;
   onRemove: (id: string, name: string) => void;
+  onRemoveTag?: (id: string, tag: string) => void;
   nameInputRef: React.RefObject<HTMLInputElement>;
 }
 
@@ -25,6 +26,7 @@ export function PersonDetailModal({
   onNameChange,
   onNameKeyDown,
   onRemove,
+  onRemoveTag,
   nameInputRef,
 }: PersonDetailModalProps) {
   if (!selectedPerson) return null;
@@ -80,9 +82,14 @@ export function PersonDetailModal({
             const tagColor = tagDef?.color || 'bg-gray-100 text-gray-600';
             const tagLabel = tagDef?.label || tag;
             return (
-              <span key={tag} className={`text-xs px-3 py-1 rounded-full font-medium ${tagColor}`}>
+              <button
+                key={tag}
+                onClick={() => onRemoveTag?.(selectedPerson.id, tag)}
+                className={`text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity ${tagColor}`}
+              >
                 {tagLabel}
-              </span>
+                <span className="text-[10px] opacity-60 hover:opacity-100">×</span>
+              </button>
             );
           })}
         </div>
