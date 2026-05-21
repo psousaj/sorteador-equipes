@@ -70,8 +70,12 @@ export function HomeScreen() {
   }, [drawError]);
 
   // Computed values
-  // All tags = user tags first, then template tags
-  const allTags = useMemo(() => [...userTags, ...templateTags], [userTags, templateTags]);
+  // All tags = user tags first, then template tags (no duplicates)
+  const allTags = useMemo(() => {
+    const unique = new Set(userTags);
+    const filteredTemplateTags = templateTags.filter(t => !unique.has(t));
+    return [...userTags, ...filteredTemplateTags];
+  }, [userTags, templateTags]);
 
   // Available tags for rules (default tags + user tags + template tags)
   const availableRuleTags = useMemo(() => {
