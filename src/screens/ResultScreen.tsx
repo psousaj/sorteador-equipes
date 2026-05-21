@@ -448,7 +448,7 @@ export function ResultScreen() {
           )}
         </AnimatePresence>
 
-        {/* Copy preview */}
+        {/* Copy preview - COMENTADO, pode ser reativado depois 
         <motion.div
           className="mt-8 max-w-xl mx-auto"
           initial={{ opacity: 0 }}
@@ -460,6 +460,7 @@ export function ResultScreen() {
             {formatWhatsApp()}
           </pre>
         </motion.div>
+        */}
       </div>
     </div>
   );
