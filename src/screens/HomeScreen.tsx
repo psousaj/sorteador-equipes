@@ -132,7 +132,11 @@ export function HomeScreen() {
   };
 
   const handleAddCustomTag = (id: string, tag: string) => {
-    if (!userTags.includes(tag)) setUserTags(prev => [...prev, tag]);
+    // Validate: 2-30 chars, alphanumeric + acentos + hífen + espaço
+    if (!tag || tag.length < 2 || tag.length > 30 || !/^[a-zA-ZÀ-ÿ0-9\-_\s]+$/.test(tag)) return;
+    // Check if already exists in user or template tags
+    if (userTags.includes(tag) || templateTags.includes(tag)) return;
+    setUserTags(prev => [...prev, tag]);
     dispatch({ type: 'ADD_TAG_TO_PERSON', payload: { id, tag } });
   };
 

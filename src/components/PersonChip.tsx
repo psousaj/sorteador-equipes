@@ -158,10 +158,18 @@ export function PersonChip({
           className="w-3/5 text-xs px-2 py-1 border rounded-lg focus:outline-none focus:border-brand"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              const value = (e.target as HTMLInputElement).value.trim();
-              if (value) {
-                onAddCustomTag(person.id, value.toLowerCase());
+              const value = (e.target as HTMLInputElement).value.trim().toLowerCase();
+              if (value && value.length >= 2 && value.length <= 30 && /^[a-zA-ZÀ-ÿ0-9\-_\s]+$/.test(value)) {
+                onAddCustomTag(person.id, value);
                 (e.target as HTMLInputElement).value = '';
+              } else if (value) {
+                // Show visual feedback for invalid tag
+                const input = e.target as HTMLInputElement;
+                input.classList.add('border-red-400', 'bg-red-50');
+                setTimeout(() => {
+                  input.classList.remove('border-red-400', 'bg-red-50');
+                  input.value = '';
+                }, 1200);
               }
             }
           }}
