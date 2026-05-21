@@ -5,6 +5,7 @@ import { defaultGameConfig, randomTeamEmoji } from '../types';
 import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs, saveGameConfig, getGameConfig } from '../lib/storage';
 import { runDraw } from '../lib/sortAlgorithm';
 import { inferGender } from '../lib/genderInference';
+import { validateGameConfig } from '../lib/validation';
 
 // ─── State ──────────────────────────────────────────────
 
@@ -609,13 +610,25 @@ function reducer(state: AppState, action: Action): AppState {
     }
 
     case 'UPDATE_GAME_CONFIG': {
+      const result = validateGameConfig(action.payload);
+      if (!result.success) {
+        console.warn('Config inválida ignorada:', result.error.flatten());
+        return state;
+      }
+      const newConfig = result.data;
       return {
         ...state,
         game: {
           ...state.game,
           config: {
             ...state.game.config,
-            ...action.payload,
+            ...newConfig,
+            pointsToWin: Number(newConfig.pointsToWin),
+            margin: Number(newConfig.margin),
+            setsToWin: Number(newConfig.setsToWin),
+            totalSets: Number(newConfig.totalSets),
+            maxWins: Number(newConfig.maxWins),
+            timerDuration: Number(newConfig.timerDuration),
           },
         },
       };

@@ -14,7 +14,7 @@ export function GameScreen() {
   const [showHistory, setShowHistory] = useState(false);
   const [showTheme, setShowTheme] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
-  const [celebrated, setCelebrated] = useState(false);
+  const celebratedRef = useRef(false);
   const [menuExpanded, setMenuExpanded] = useState(false);
 
   // Timer state
@@ -107,15 +107,15 @@ export function GameScreen() {
   // Celebration on win
   useEffect(() => {
     if (leftScore >= game.config.pointsToWin || rightScore >= game.config.pointsToWin) {
-      if (!celebrated) {
-        setCelebrated(true);
+      if (!celebratedRef.current) {
+        celebratedRef.current = true;
         confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
         new Audio("https://www.soundjay.com/misc/sounds/applause-1.mp3").play().catch(() => {});
       }
     } else {
-      setCelebrated(false);
+      celebratedRef.current = false;
     }
-  }, [leftScore, rightScore, game.config.pointsToWin, celebrated]);
+  }, [leftScore, rightScore, game.config.pointsToWin]);
 
   const handleConfigChange = useCallback((newConfig: typeof game.config) => {
     dispatch({ type: 'UPDATE_GAME_CONFIG', payload: newConfig });
