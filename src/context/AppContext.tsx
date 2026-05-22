@@ -338,32 +338,38 @@ function reducer(state: AppState, action: Action): AppState {
           winner,
         };
 
-        // Rotation: both leave — winner to front, loser to back
-        let newQueue = [winnerId, ...game.queue, loserId];
+        // Rotation: loser goes to back of queue
+        let newQueue = [...game.queue, loserId];
         const newWins = { ...game.wins };
         newWins[winnerId] = (newWins[winnerId] || 0) + 1;
+        const winnerDone = newWins[winnerId] >= game.config.maxWins;
 
         let newPlaying: [number, number] | null;
         let isActive = true;
 
-        if (newWins[winnerId] >= game.config.maxWins) {
-          // Winner hit limit — pull two from queue (winner is at front)
+        if (winnerDone) {
+          // Winner is out — pull two from queue
           const t1 = newQueue.shift();
           const t2 = newQueue.shift();
           if (t1 !== undefined && t2 !== undefined) {
             newPlaying = [t1, t2];
           } else {
+            // Not enough teams left to play
             newPlaying = null;
             isActive = false;
           }
+          // Winner goes to front of queue to wait for next round
+          newQueue = [winnerId, ...newQueue];
         } else {
-          // Winner hasn't hit limit — pull 1 challenger from queue
-          // Winner is at front, so t1 = winner, t2 = challenger
-          const t1 = newQueue.shift();  // winner
-          const t2 = newQueue.shift();  // challenger
-          if (t1 !== undefined && t2 !== undefined) {
-            newPlaying = [t1, t2];
+          // Winner stays — pull challenger from queue
+          const challenger = newQueue.shift();
+          if (challenger !== undefined) {
+            const winnerIdx = newScores[0] >= pointsToWin ? 0 : 1;
+            newPlaying = winnerIdx === 0
+              ? [winnerId, challenger]
+              : [challenger, winnerId];
           } else {
+            // No challengers left
             newPlaying = null;
             isActive = false;
           }
