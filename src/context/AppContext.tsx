@@ -358,8 +358,6 @@ function reducer(state: AppState, action: Action): AppState {
             newPlaying = null;
             isActive = false;
           }
-          // Winner goes to front of queue to wait for next round
-          newQueue = [winnerId, ...newQueue];
         } else {
           // Winner stays — pull challenger from queue
           const challenger = newQueue.shift();
