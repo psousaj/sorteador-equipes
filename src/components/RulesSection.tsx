@@ -15,8 +15,8 @@ interface RulesSectionProps {
 }
 
 const TAG_COLORS: Record<string, string> = {
-  masculino: 'bg-blue-100 text-blue-800',
-  feminino: 'bg-pink-100 text-pink-800',
+  iniciante: 'bg-green-100 text-green-800',
+  experiente: 'bg-yellow-100 text-yellow-800',
 };
 
 export function RulesSection({

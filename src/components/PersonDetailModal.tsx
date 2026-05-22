@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { DEFAULT_TAGS } from '../types';
 import type { Person } from '../types';
 
 interface PersonDetailModalProps {
-  selectedPerson: Person | null;
+  person: Person | null;
   onClose: () => void;
   editingName: string | null;
   editNameValue: string;
@@ -13,11 +14,12 @@ interface PersonDetailModalProps {
   onNameKeyDown: (e: React.KeyboardEvent) => void;
   onRemove: (id: string, name: string) => void;
   onRemoveTag?: (id: string, tag: string) => void;
+  onGenderChange?: (id: string, gender: Person['gender']) => void;
   nameInputRef: React.RefObject<HTMLInputElement>;
 }
 
 export function PersonDetailModal({
-  selectedPerson,
+  person,
   onClose,
   editingName,
   editNameValue,
@@ -27,9 +29,23 @@ export function PersonDetailModal({
   onNameKeyDown,
   onRemove,
   onRemoveTag,
+  onGenderChange,
   nameInputRef,
 }: PersonDetailModalProps) {
-  if (!selectedPerson) return null;
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  if (!person) return null;
+
+  const handleRemove = () => {
+    onRemove(person.id, person.name);
+    setConfirmDelete(false);
+  };
+
+  const genderOptions: { value: Person['gender']; label: string; emoji: string }[] = [
+    { value: 'male', label: 'Masculino', emoji: '🚹' },
+    { value: 'female', label: 'Feminino', emoji: '🚺' },
+    { value: 'unknown', label: 'Indefinido', emoji: '❓' },
+  ];
 
   return (
     <div
@@ -48,10 +64,28 @@ export function PersonDetailModal({
         </button>
 
         <div className="text-center mb-4">
-          <div className="text-4xl mb-2">
-            {selectedPerson.gender === 'male' ? '🚹' : selectedPerson.gender === 'female' ? '🚺' : '❓'}
+          {/* Gender radio */}
+          <div className="flex justify-center gap-2 mb-3">
+            {genderOptions.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => onGenderChange?.(person.id, opt.value)}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-semibold transition-all border-2 ${
+                  person.gender === opt.value
+                    ? opt.value === 'male'
+                      ? 'border-blue-400 bg-blue-50 text-blue-700'
+                      : opt.value === 'female'
+                        ? 'border-pink-400 bg-pink-50 text-pink-700'
+                        : 'border-orange-400 bg-orange-50 text-orange-700'
+                    : 'border-gray-200 text-gray-400 hover:border-gray-300'
+                }`}
+              >
+                {opt.emoji} {opt.label}
+              </button>
+            ))}
           </div>
-          {editingName === selectedPerson.id ? (
+
+          {editingName === person.id ? (
             <input
               ref={nameInputRef}
               type="text"
@@ -64,9 +98,9 @@ export function PersonDetailModal({
           ) : (
             <h3
               className="text-xl font-display font-bold text-gray-800 cursor-pointer hover:text-brand transition-colors"
-              onClick={() => onStartEditing(selectedPerson)}
+              onClick={() => onStartEditing(person)}
             >
-              {selectedPerson.name}
+              {person.name}
             </h3>
           )}
           <p className="text-xs text-gray-400 mt-1">Clique no nome para editar</p>
@@ -74,17 +108,17 @@ export function PersonDetailModal({
 
         {/* Tags */}
         <div className="flex flex-wrap justify-center gap-1.5 mb-6">
-          {selectedPerson.tags.length === 0 && (
+          {person.tags.length === 0 && (
             <span className="text-xs text-gray-400">Nenhuma tag</span>
           )}
-          {selectedPerson.tags.map(tag => {
+          {person.tags.map(tag => {
             const tagDef = DEFAULT_TAGS.find(t => t.value === tag);
             const tagColor = tagDef?.color || 'bg-gray-100 text-gray-600';
             const tagLabel = tagDef?.label || tag;
             return (
               <button
                 key={tag}
-                onClick={() => onRemoveTag?.(selectedPerson.id, tag)}
+                onClick={(e) => { e.stopPropagation(); onRemoveTag?.(person.id, tag); }}
                 className={`text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity ${tagColor}`}
               >
                 {tagLabel}
@@ -95,13 +129,35 @@ export function PersonDetailModal({
         </div>
 
         <div className="flex flex-col gap-2 mt-6">
-          <button
-            onClick={() => onRemove(selectedPerson.id, selectedPerson.name)}
-            className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-          >
-            <Trash2 size={16} />
-            Remover {editingName === selectedPerson.id ? editNameValue || selectedPerson.name : selectedPerson.name}
-          </button>
+          {!confirmDelete ? (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="w-full py-3 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+            >
+              <Trash2 size={16} />
+              Remover {editingName === person.id ? editNameValue || person.name : person.name}
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-red-600 text-center font-medium">
+                Tem certeza que deseja remover <strong>{person.name}</strong>?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleRemove}
+                  className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 transition-colors"
+                >
+                  Sim, remover
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-semibold text-sm hover:bg-gray-200 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

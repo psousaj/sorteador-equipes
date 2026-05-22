@@ -29,7 +29,7 @@ export function HomeScreen() {
   const [templateTags, setTemplateTags] = useState<string[]>([]);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [captainTooltipOpen, setCaptainTooltipOpen] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [blockModePersonId, setBlockModePersonId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState<string | null>(null);
   const [editNameValue, setEditNameValue] = useState('');
@@ -92,6 +92,11 @@ export function HomeScreen() {
     return Math.ceil(people.length / teamSize);
   }, [people.length, teamSize]);
 
+  // Derive current person from context to avoid stale references
+  const selectedPerson = useMemo(() => {
+    return selectedPersonId ? people.find(p => p.id === selectedPersonId) || null : null;
+  }, [selectedPersonId, people]);
+
   const blockedPairs = useMemo(() => {
     const pairs: BlockedPair[] = [];
     const processed = new Set<string>();
@@ -142,7 +147,7 @@ export function HomeScreen() {
 
   const handleRemovePerson = (id: string, name: string) => {
     dispatch({ type: 'REMOVE_PERSON', payload: { id, name } });
-    setSelectedPerson(null);
+    setSelectedPersonId(null);
   };
 
   const handleToggleBlockMode = () => {
@@ -263,7 +268,7 @@ export function HomeScreen() {
                 onBlockPersonClick={handleBlockPersonClick}
                 onClearPeople={() => dispatch({ type: 'CLEAR_PEOPLE' })}
                 onRemovePerson={handleRemovePerson}
-                onClickName={setSelectedPerson}
+                onClickName={(p) => setSelectedPersonId(p.id)}
                 blockedPairs={blockedPairs}
                 onShowBlockedPanel={() => setShowBlockedPanel(!showBlockedPanel)}
                 showBlockedPanel={showBlockedPanel}
@@ -390,8 +395,8 @@ export function HomeScreen() {
 
       {/* Person detail modal */}
       <PersonDetailModal
-        selectedPerson={selectedPerson}
-        onClose={() => { setSelectedPerson(null); setEditingName(null); }}
+        person={selectedPerson}
+        onClose={() => { setSelectedPersonId(null); setEditingName(null); }}
         editingName={editingName}
         editNameValue={editNameValue}
         onStartEditing={handleStartEditingName}
@@ -400,6 +405,7 @@ export function HomeScreen() {
         onNameKeyDown={handleNameKeyDown}
         onRemove={handleRemovePerson}
         onRemoveTag={handleToggleTag}
+        onGenderChange={handleGenderChange}
         nameInputRef={nameInputRef}
       />
 

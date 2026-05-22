@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { X } from 'lucide-react';
 import type { Person } from '../types';
 import { DEFAULT_TAGS } from '../types';
 import { TEAM_COLORS } from '../types';
@@ -91,11 +90,12 @@ export function PersonChip({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onRemove(person.id);
+              onClickName(person);
             }}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500"
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-brand"
+            title="Detalhes"
           >
-            <X size={16} />
+            <span className="text-sm font-bold">⋯</span>
           </button>
         )}
       </div>

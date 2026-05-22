@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair, GameConfig, GameSession, MatchResult } from '../types';
-import { defaultGameConfig, randomTeamEmoji } from '../types';
+import { defaultGameConfig, randomTeamEmoji, MUTUALLY_EXCLUSIVE_TAGS } from '../types';
 import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs, saveGameConfig, getGameConfig } from '../lib/storage';
 import { runDraw } from '../lib/sortAlgorithm';
 import { inferGender } from '../lib/genderInference';
@@ -164,11 +164,7 @@ function reducer(state: AppState, action: Action): AppState {
       const { id, gender } = action.payload;
       const people = state.people.map(p => {
         if (p.id !== id) return p;
-        // Remove old gender tags, add new ones
-        let tags = p.tags.filter(t => t !== 'masculino' && t !== 'feminino');
-        if (gender === 'male') tags.push('masculino');
-        if (gender === 'female') tags.push('feminino');
-        return { ...p, gender, tags };
+        return { ...p, gender };
       });
       return { ...state, people };
     }
@@ -178,55 +174,42 @@ function reducer(state: AppState, action: Action): AppState {
       const people = state.people.map(p => {
         if (p.id !== id) return p;
         const hasTag = p.tags.includes(tag);
-        const newTags = hasTag ? p.tags.filter(t => t !== tag) : [...p.tags, tag];
-        // Update gender when toggling masculine/feminine tags
-        let newGender = p.gender;
-        if (tag === 'masculino') {
-          newGender = hasTag ? 'unknown' : 'male';
-        } else if (tag === 'feminino') {
-          newGender = hasTag ? 'unknown' : 'female';
+        if (hasTag) {
+          // Remove the tag
+          return { ...p, tags: p.tags.filter(t => t !== tag) };
         }
-        return {
-          ...p,
-          tags: newTags,
-          gender: newGender,
-        };
+        // Add the tag — remove mutually exclusive ones first
+        const toRemove = MUTUALLY_EXCLUSIVE_TAGS
+          .filter(([a, b]) => (a === tag || b === tag))
+          .flatMap(([a, b]) => [a, b])
+          .filter(t => t !== tag);
+        const filteredTags = p.tags.filter(t => !toRemove.includes(t));
+        return { ...p, tags: [...filteredTags, tag] };
       });
       return { ...state, people };
     }
 
     case 'ADD_TAG_TO_PERSON': {
       const { id, tag } = action.payload;
-      let updatedPeople = state.people.map(p =>
-        p.id === id && !p.tags.includes(tag)
-          ? { ...p, tags: [...p.tags, tag] }
-          : p
-      );
-      // Also update gender if tag is masculine/feminine
-      if (tag === 'masculino') {
-        updatedPeople = updatedPeople.map(p =>
-          p.id === id ? { ...p, gender: 'male' as const } : p
-        );
-      } else if (tag === 'feminino') {
-        updatedPeople = updatedPeople.map(p =>
-          p.id === id ? { ...p, gender: 'female' as const } : p
-        );
-      }
-      return { ...state, people: updatedPeople };
+      const people = state.people.map(p => {
+        if (p.id !== id || p.tags.includes(tag)) return p;
+        // Remove mutually exclusive tags first
+        const toRemove = MUTUALLY_EXCLUSIVE_TAGS
+          .filter(([a, b]) => (a === tag || b === tag))
+          .flatMap(([a, b]) => [a, b])
+          .filter(t => t !== tag);
+        const filteredTags = p.tags.filter(t => !toRemove.includes(t));
+        return { ...p, tags: [...filteredTags, tag] };
+      });
+      return { ...state, people };
     }
 
     case 'REMOVE_TAG_FROM_PERSON': {
       const { id, tag } = action.payload;
-      let updatedPeople = state.people.map(p =>
+      const people = state.people.map(p =>
         p.id === id ? { ...p, tags: p.tags.filter(t => t !== tag) } : p
       );
-      // Also update gender if removing masculine/feminine tag
-      if (tag === 'masculino' || tag === 'feminino') {
-        updatedPeople = updatedPeople.map(p =>
-          p.id === id ? { ...p, gender: 'unknown' as const } : p
-        );
-      }
-      return { ...state, people: updatedPeople };
+      return { ...state, people };
     }
 
 

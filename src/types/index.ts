@@ -104,9 +104,14 @@ export interface BlockedPair {
 }
 
 export const DEFAULT_TAGS = [
-  { value: 'masculino', label: 'Masculino', color: 'bg-blue-100 text-blue-800' },
-  { value: 'feminino', label: 'Feminino', color: 'bg-pink-100 text-pink-800' },
+  { value: 'iniciante', label: 'Iniciante', color: 'bg-green-100 text-green-800' },
+  { value: 'experiente', label: 'Experiente', color: 'bg-yellow-100 text-yellow-800' },
 ] as const;
+
+/** Tags que não podem coexistir na mesma pessoa */
+export const MUTUALLY_EXCLUSIVE_TAGS: [string, string][] = [
+  ['iniciante', 'experiente'],
+];
 
 export const TEAM_COLORS = [
   { bg: 'bg-team-1', light: 'bg-purple-100', border: 'border-purple-400', text: 'text-purple-700', hex: '#6C5CE7' },
