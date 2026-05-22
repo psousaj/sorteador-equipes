@@ -3,7 +3,7 @@ import { Copy, Check, Shuffle, ArrowLeft, Share2, Play, X, Crown } from 'lucide-
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import type { GameConfig, Team } from '../types';
-import { defaultGameConfig, randomTeamEmoji, TEAM_EMOJIS } from '../types';
+import { defaultGameConfig, randomTeamEmoji, TEAM_EMOJIS, TEAM_COLORS } from '../types';
 import { getGameConfig, saveGameConfig, saveTeamCustomizations, getTeamCustomizations } from '../lib/storage';
 
 export function ResultScreen() {
@@ -183,33 +183,19 @@ export function ResultScreen() {
           {currentResult.teams.map((team, idx) => {
             const displayName = teamNames[team.id] || `Time ${team.id}`;
             const displayEmoji = teamEmojis[team.id] || '🏳️';
-            const colors = [
-              'border-purple-400 bg-purple-100',
-              'border-emerald-400 bg-emerald-100',
-              'border-pink-400 bg-pink-100',
-              'border-yellow-400 bg-yellow-100',
-              'border-sky-400 bg-sky-100',
-              'border-orange-400 bg-orange-100',
-              'border-teal-400 bg-teal-100',
-              'border-indigo-400 bg-indigo-100',
-            ];
-            const headerColors = [
-              'bg-purple-500', 'bg-emerald-500', 'bg-pink-500', 'bg-yellow-500',
-              'bg-sky-500', 'bg-orange-500', 'bg-teal-500', 'bg-indigo-500',
-            ];
-            const ci = idx % colors.length;
+            const tc = TEAM_COLORS[idx % TEAM_COLORS.length];
 
             return (
               <motion.div
                 key={team.id}
-                className={`rounded-2xl border-2 ${colors[ci]} overflow-hidden transition-all hover:shadow-lg`}
+                className={`rounded-2xl border-2 ${tc.border} ${tc.light} overflow-hidden transition-all hover:shadow-lg`}
                 variants={{
                   hidden: { opacity: 0, y: 20, scale: 0.95 },
                   visible: { opacity: 1, y: 0, scale: 1 },
                 }}
               >
                 {/* Header with inline editor */}
-                <div className={`${headerColors[ci]} text-white px-4 py-2 flex items-center gap-2`}>
+                <div className={`${tc.bg} text-white px-4 py-2 flex items-center gap-2`}>
                   {/* Emoji selector */}
                   <div className="relative">
                     <button

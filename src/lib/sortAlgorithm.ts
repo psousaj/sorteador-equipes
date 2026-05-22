@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { Person, TeamRule, DrawConfig, Team, DrawResult } from '../types';
+import { TEAM_EMOJIS } from '../types';
 
 interface DrawInput {
   people: Person[];
@@ -286,7 +287,7 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
     members,
     captain: captains[i],
     name: captains[i] ? `Time do ${captains[i]!.name}` : `Time ${i + 1}`,
-    emoji: '🎯',
+    emoji: TEAM_EMOJIS[i % TEAM_EMOJIS.length],
   }));
 
   return { teams: result, errors };
