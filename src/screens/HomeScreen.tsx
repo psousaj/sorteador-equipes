@@ -35,6 +35,7 @@ export function HomeScreen() {
   const [editNameValue, setEditNameValue] = useState('');
   const [showBlockedPanel, setShowBlockedPanel] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [importCount, setImportCount] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null!);
   const captainTooltipRef = useRef<HTMLDivElement>(null!);
   const nameInputRef = useRef<HTMLInputElement>(null!);
@@ -119,6 +120,8 @@ export function HomeScreen() {
     if (!importedNames.trim()) return;
     if (soundEnabled) playPopSound();
     parseNames(importedNames);
+    dispatch({ type: 'IMPORT_NAMES', payload: '' });
+    setImportCount(c => c + 1);
   };
 
   const handleTextareaKeyDown = (e: React.KeyboardEvent) => {
@@ -258,6 +261,7 @@ export function HomeScreen() {
               soundEnabled={soundEnabled}
               textareaRef={textareaRef}
               peopleLength={people.length}
+              importCount={importCount}
             />
 
             {people.length > 0 && (

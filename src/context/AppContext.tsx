@@ -836,15 +836,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const people: Person[] = newNames.map(name => {
       const inferredGender = inferGender(name);
-      const tags: string[] = [];
-      if (inferredGender === 'male') tags.push('masculino');
-      if (inferredGender === 'female') tags.push('feminino');
 
       return {
         id: uuidv4(),
         name,
         gender: inferredGender,
-        tags,
+        tags: [],
         blockedWith: [],
       };
     });
