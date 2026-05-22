@@ -58,6 +58,7 @@ export interface GameConfig {
   askSetWinner: boolean;
   darkTheme: boolean;
   orientation: 'normal' | 'inverted';
+  screenOrientation: 'landscape' | 'portrait';
 
   // Templates
   sportTemplate: string;    // 'football' | 'volleyball' | 'basketball' | 'table-tennis' | ''
@@ -147,6 +148,7 @@ export function defaultGameConfig(): GameConfig {
     askSetWinner: false,
     darkTheme: false,
     orientation: 'normal',
+    screenOrientation: 'landscape',
     sportTemplate: '',
   };
 }

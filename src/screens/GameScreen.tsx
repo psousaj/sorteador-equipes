@@ -13,7 +13,7 @@ export function GameScreen() {
 
   // Force landscape on mobile
   useEffect(() => {
-    if (typeof screen !== 'undefined' && 'orientation' in screen) {
+    if (game.config.screenOrientation === 'landscape' && typeof screen !== 'undefined' && 'orientation' in screen) {
       (screen.orientation as any).lock?.('landscape').catch(() => {});
     }
     return () => {
@@ -21,7 +21,7 @@ export function GameScreen() {
         (screen.orientation as any).unlock?.();
       }
     };
-  }, []);
+  }, [game.config.screenOrientation]);
 
   const [showHistory, setShowHistory] = useState(false);
   const [showTheme, setShowTheme] = useState(false);

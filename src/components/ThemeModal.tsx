@@ -54,10 +54,19 @@ export function ThemeModal({ isOpen, onClose, config, onConfigChange }: Props) {
             {/* Toggle options */}
             <div className="grid grid-cols-2 gap-3 mb-4">
               <ToggleButton
-                label="Orientação"
+                label="Lado dos times"
                 value={config.orientation === 'inverted' ? 'Invertido' : 'Normal'}
                 active={config.orientation === 'inverted'}
                 onClick={() => toggle('orientation')}
+              />
+              <ToggleButton
+                label="Tela do jogo"
+                value={config.screenOrientation === 'portrait' ? 'Retrato' : 'Paisagem'}
+                active={config.screenOrientation === 'landscape'}
+                onClick={() => onConfigChange({
+                  ...config,
+                  screenOrientation: config.screenOrientation === 'landscape' ? 'portrait' : 'landscape',
+                })}
               />
               <ToggleButton
                 label="Fundo escuro"
