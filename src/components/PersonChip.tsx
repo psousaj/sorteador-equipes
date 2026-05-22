@@ -18,9 +18,15 @@ interface PersonChipProps {
 }
 
 const genderEmoji: Record<string, string> = {
-  male: '🚹',
-  female: '🚺',
-  unknown: '❓',
+  male: '♂',
+  female: '♀',
+  unknown: '?',
+};
+
+const genderColor: Record<string, string> = {
+  male: 'text-blue-500',
+  female: 'text-pink-500',
+  unknown: 'text-orange-400',
 };
 
 export function PersonChip({
@@ -41,12 +47,6 @@ export function PersonChip({
 
   const colorIndex = index % TEAM_COLORS.length;
 
-  const genderBorder = person.gender === 'male'
-    ? 'border-blue-300'
-    : person.gender === 'female'
-      ? 'border-pink-300'
-      : 'border-orange-300';
-
   // Close tag menu on click outside
   useEffect(() => {
     if (!tagMenuOpen) return;
@@ -65,14 +65,14 @@ export function PersonChip({
         relative group rounded-xl border-2 p-3 transition-all duration-200 select-none
         ${isBlockModeTarget
           ? 'border-red-500 bg-red-100 cursor-pointer hover:shadow-md hover:bg-red-200 hover:border-red-600'
-          : `${genderBorder} bg-white hover:shadow-md hover:border-brand-light`
+          : 'border-stone-200 bg-white hover:shadow-md hover:border-brand-light'
         }
       `}
       onClick={() => isBlockModeTarget && onBlockSelect?.(person.id)}
     >
-      {/* Header: Name + Gender + Remove */}
+      {/* Header: Name + Gender + Details */}
       <div className="flex items-center gap-2 mb-2">
-        <span className={`text-lg ${isBlockModeTarget ? '' : 'cursor-pointer hover:scale-110 transition-transform'}`}>
+        <span className={`text-lg font-bold ${genderColor[person.gender]} ${isBlockModeTarget ? '' : 'cursor-pointer hover:scale-110 transition-transform'}`}>
           {genderEmoji[person.gender]}
         </span>
         <span

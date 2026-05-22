@@ -41,10 +41,10 @@ export function PersonDetailModal({
     setConfirmDelete(false);
   };
 
-  const genderOptions: { value: Person['gender']; label: string; emoji: string }[] = [
-    { value: 'male', label: 'Masculino', emoji: '🚹' },
-    { value: 'female', label: 'Feminino', emoji: '🚺' },
-    { value: 'unknown', label: 'Indefinido', emoji: '❓' },
+  const genderOptions: { value: Person['gender']; label: string; icon: string; color: string }[] = [
+    { value: 'male', label: 'Masculino', icon: '♂', color: 'text-blue-500' },
+    { value: 'female', label: 'Feminino', icon: '♀', color: 'text-pink-500' },
+    { value: 'unknown', label: 'Indefinido', icon: '?', color: 'text-orange-400' },
   ];
 
   return (
@@ -80,7 +80,7 @@ export function PersonDetailModal({
                     : 'border-gray-200 text-gray-400 hover:border-gray-300'
                 }`}
               >
-                {opt.emoji} {opt.label}
+                <span className={`text-base font-bold ${opt.color}`}>{opt.icon}</span> {opt.label}
               </button>
             ))}
           </div>
