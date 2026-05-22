@@ -93,6 +93,58 @@ type Action =
   | { type: 'RESTART_MATCH' }
   | { type: 'CLOSE_GAME' };
 
+// ─── Pure rotation logic ─────────────────────────────────
+
+interface RotateResult {
+  playing: [number, number] | null;
+  queue: number[];
+  isActive: boolean;
+}
+
+function rotateCourt(
+  playing: [number, number],
+  queue: number[],
+  winnerId: number,
+  loserId: number,
+  winner: 'team1' | 'team2',
+  hitMaxWins: boolean
+): RotateResult {
+  if (hitMaxWins) {
+    // MODE 2: campeão bateu limite — ambos saem
+    // 1. promove até 2 da fila
+    const promoted = queue.slice(0, 2);
+    const newQueue = [winnerId, ...queue.slice(2), loserId];
+    // winner → topo, loser → final
+
+    // 2. monta quadra
+    if (promoted.length >= 2) {
+      return { playing: [promoted[0], promoted[1]], queue: newQueue, isActive: true };
+    }
+    if (promoted.length === 1) {
+      // Só 1 disponível — completa com o winner (que está no topo da fila)
+      return { playing: [promoted[0], winnerId], queue: newQueue.slice(1), isActive: true };
+    }
+    // Nenhum na fila — tenta completar com winner e loser
+    if (newQueue.length >= 2) {
+      return { playing: [newQueue[0], newQueue[1]], queue: newQueue.slice(2), isActive: true };
+    }
+    return { playing: null, queue: newQueue, isActive: false };
+  }
+
+  // MODE 1: vitória normal — winner fica, loser pro final
+  const newQueue = [...queue, loserId];
+  if (newQueue.length >= 1) {
+    const nextTeamId = newQueue[0];
+    const remainingQueue = newQueue.slice(1);
+    // Winner joga no lado original
+    const newPlaying: [number, number] = winner === 'team1'
+      ? [winnerId, nextTeamId]
+      : [nextTeamId, winnerId];
+    return { playing: newPlaying, queue: remainingQueue, isActive: true };
+  }
+  return { playing: null, queue: newQueue, isActive: false };
+}
+
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'SET_SCREEN':
@@ -338,52 +390,17 @@ function reducer(state: AppState, action: Action): AppState {
           winner,
         };
 
-        // Rotation: loser goes to back of queue
-        let newQueue = [...game.queue, loserId];
-        let newPlaying: [number, number] | null = game.playing;
-        let isActive = true;
-
-        // Reset scores
         const newWins = { ...game.wins };
         newWins[winnerId] = (newWins[winnerId] || 0) + 1;
 
-        // Check if winner hit maxWins
-        if (newWins[winnerId] >= game.config.maxWins) {
-          // Winner is done
-          newPlaying = null;
-        } else {
-          // Winner stays
-          newPlaying = game.playing;
-        }
-
-        // Pull next from queue
-        if (newQueue.length >= 1) {
-          const nextTeamId = newQueue[0];
-          newQueue = newQueue.slice(1);
-          if (!newPlaying) {
-            // Need two teams: first from queue, then next
-            if (newQueue.length >= 1) {
-              const secondTeamId = newQueue[0];
-              newQueue = newQueue.slice(1);
-              newPlaying = [nextTeamId, secondTeamId];
-            } else {
-              newPlaying = [nextTeamId, winnerId];
-            }
-          } else {
-            // Winner stays, challenger comes in
-            const winnerIdx = newScores[0] >= pointsToWin ? 0 : 1;
-            newPlaying = winnerIdx === 0
-              ? [winnerId, nextTeamId]
-              : [nextTeamId, winnerId];
-          }
-        } else {
-          newPlaying = null;
-          isActive = false;
-        }
-
-        if (newWins[winnerId] >= game.config.maxWins) {
-          newQueue = [winnerId, ...newQueue];
-        }
+        const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
+          game.playing,
+          game.queue,
+          winnerId,
+          loserId,
+          winner,
+          newWins[winnerId] >= game.config.maxWins
+        );
 
         return {
           ...state,
@@ -478,48 +495,14 @@ function reducer(state: AppState, action: Action): AppState {
         winner: setWinner,
       };
 
-      // Rotation: loser goes to back of queue
-      let newQueue = [...game.queue, loserTeamId];
-      let newPlaying: [number, number] | null = game.playing;
-      let isActive = true;
-
-      // Check if winner hit maxWins
-      if (newWins[winnerTeamId] >= game.config.maxWins) {
-        // Winner is done
-        newPlaying = null;
-      } else {
-        // Winner stays
-        newPlaying = game.playing;
-      }
-
-      // Pull next from queue
-      if (newQueue.length >= 1) {
-        const nextTeamId = newQueue[0];
-        newQueue = newQueue.slice(1);
-        if (!newPlaying) {
-          // Need two teams: first from queue, then next
-          if (newQueue.length >= 1) {
-            const secondTeamId = newQueue[0];
-            newQueue = newQueue.slice(1);
-            newPlaying = [nextTeamId, secondTeamId];
-          } else {
-            newPlaying = [nextTeamId, winnerTeamId];
-          }
-        } else {
-          // Winner stays, challenger comes in
-          const winnerIdx = newScores[0] >= game.config.pointsToWin ? 0 : 1;
-          newPlaying = winnerIdx === 0
-            ? [winnerTeamId, nextTeamId]
-            : [nextTeamId, winnerTeamId];
-        }
-      } else {
-        newPlaying = null;
-        isActive = false;
-      }
-
-      if (newWins[winnerTeamId] >= game.config.maxWins) {
-        newQueue = [winnerTeamId, ...newQueue];
-      }
+      const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
+        game.playing,
+        game.queue,
+        winnerTeamId,
+        loserTeamId,
+        setWinner,
+        newWins[winnerTeamId] >= game.config.maxWins
+      );
 
       return {
         ...state,
