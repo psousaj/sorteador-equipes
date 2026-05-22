@@ -309,7 +309,6 @@ function reducer(state: AppState, action: Action): AppState {
           // Save history, no winner yet
       return {
         ...state,
-        screen: 'gameover',
         game: {
               ...game,
               scores: newScores,
