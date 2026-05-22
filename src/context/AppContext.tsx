@@ -340,49 +340,37 @@ function reducer(state: AppState, action: Action): AppState {
 
         // Rotation: loser goes to back of queue
         let newQueue = [...game.queue, loserId];
-        let newPlaying: [number, number] | null = game.playing;
-        let isActive = true;
-
-        // Reset scores
         const newWins = { ...game.wins };
         newWins[winnerId] = (newWins[winnerId] || 0) + 1;
+        const winnerDone = newWins[winnerId] >= game.config.maxWins;
 
-        // Check if winner hit maxWins
-        if (newWins[winnerId] >= game.config.maxWins) {
-          // Winner is done
-          newPlaying = null;
-        } else {
-          // Winner stays
-          newPlaying = game.playing;
-        }
+        let newPlaying: [number, number] | null;
+        let isActive = true;
 
-        // Pull next from queue
-        if (newQueue.length >= 1) {
-          const nextTeamId = newQueue[0];
-          newQueue = newQueue.slice(1);
-          if (!newPlaying) {
-            // Need two teams: first from queue, then next
-            if (newQueue.length >= 1) {
-              const secondTeamId = newQueue[0];
-              newQueue = newQueue.slice(1);
-              newPlaying = [nextTeamId, secondTeamId];
-            } else {
-              newPlaying = [nextTeamId, winnerId];
-            }
+        if (winnerDone) {
+          // Winner is out — pull two from queue
+          const t1 = newQueue.shift();
+          const t2 = newQueue.shift();
+          if (t1 !== undefined && t2 !== undefined) {
+            newPlaying = [t1, t2];
           } else {
-            // Winner stays, challenger comes in
-            const winnerIdx = newScores[0] >= pointsToWin ? 0 : 1;
-            newPlaying = winnerIdx === 0
-              ? [winnerId, nextTeamId]
-              : [nextTeamId, winnerId];
+            // Not enough teams left to play
+            newPlaying = null;
+            isActive = false;
           }
         } else {
-          newPlaying = null;
-          isActive = false;
-        }
-
-        if (newWins[winnerId] >= game.config.maxWins) {
-          newQueue = [winnerId, ...newQueue];
+          // Winner stays — pull challenger from queue
+          const challenger = newQueue.shift();
+          if (challenger !== undefined) {
+            const winnerIdx = newScores[0] >= pointsToWin ? 0 : 1;
+            newPlaying = winnerIdx === 0
+              ? [winnerId, challenger]
+              : [challenger, winnerId];
+          } else {
+            // No challengers left
+            newPlaying = null;
+            isActive = false;
+          }
         }
 
         return {
