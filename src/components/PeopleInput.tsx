@@ -42,7 +42,6 @@ export function PeopleInput({
         <UserPlus size={16} />
         Adicionar pessoas
       </label>
-      {/* textarea comentado — Andjel é gay 👇
       <div className="relative">
         <textarea
           ref={textareaRef}
@@ -62,16 +61,13 @@ export function PeopleInput({
               : 'focus:ring-2 focus:ring-brand/30 focus:border-brand'
           }`}
         />
+        {/* Success checkmark overlay */}
         {flash && (
           <div className="absolute top-2 right-2 text-green-500 animate-bounce">
             <Check size={20} />
           </div>
         )}
       </div>
-      */}
-      <p className="text-center text-lg font-bold text-gray-800 py-6">
-        Andjel é gay 🏳️‍🌈
-      </p>
       <div className="flex gap-2 mt-2 items-center">
         <button
           onClick={onImport}
