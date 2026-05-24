@@ -286,7 +286,7 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
     id: i + 1,
     members,
     captain: captains[i],
-    name: captains[i] ? `Time do ${captains[i]!.name}` : `Time ${i + 1}`,
+    name: captains[i] ? `Team ${captains[i]!.name}` : `Time ${i + 1}`,
     emoji: TEAM_EMOJIS[i % TEAM_EMOJIS.length],
   }));
 
