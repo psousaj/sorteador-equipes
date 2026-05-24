@@ -19,33 +19,33 @@ const mockTeams: Team[] = [
 
 describe('rotateCourt()', () => {
   it('MODE 1: winner stays, loser to back, promote from queue', () => {
-    const result = rotateCourt([1, 2], [3, 4], 1, 2, 'team1', false);
+    const result = rotateCourt([3, 4], 1, 2, 'team1', false);
     expect(result.playing).toEqual([1, 3]);
     expect(result.queue).toEqual([4, 2]); // 4 stays, loser(2) goes to back
     expect(result.isActive).toBe(true);
   });
 
   it('MODE 1: winner on right side (team2)', () => {
-    const result = rotateCourt([1, 2], [3, 4], 2, 1, 'team2', false);
+    const result = rotateCourt([3, 4], 2, 1, 'team2', false);
     expect(result.playing).toEqual([3, 2]); // team2 winner stays on right
     expect(result.queue).toEqual([4, 1]);
   });
 
   it('MODE 2: both leave, promote 2, winner to front, loser to back', () => {
-    const result = rotateCourt([1, 2], [3, 4], 1, 2, 'team1', true);
+    const result = rotateCourt([3, 4], 1, 2, 'team1', true);
     expect(result.playing).toEqual([3, 4]);
     expect(result.queue).toEqual([1, 2]); // winner(1) front, loser(2) back
     expect(result.isActive).toBe(true);
   });
 
   it('MODE 2: only 1 in queue, fill with winner from front', () => {
-    const result = rotateCourt([1, 2], [3], 1, 2, 'team1', true);
+    const result = rotateCourt([3], 1, 2, 'team1', true);
     expect(result.playing).toEqual([3, 1]); // promove 1, winner completa
     expect(result.queue).toEqual([2]); // loser back
   });
 
   it('MODE 2: empty queue, fill with both from newQueue', () => {
-    const result = rotateCourt([1, 2], [], 1, 2, 'team1', true);
+    const result = rotateCourt([], 1, 2, 'team1', true);
     expect(result.playing).toEqual([1, 2]);
     expect(result.queue).toEqual([]);
   });
@@ -74,7 +74,7 @@ describe('updateReign()', () => {
 
 describe('buildMatchResult()', () => {
   const result = buildMatchResult(
-    [1, 2], 1, 2,
+    [1, 2],
     15, 10,
     1, [15], [10],
     mockTeams, 'team1'

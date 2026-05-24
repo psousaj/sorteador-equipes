@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair, GameConfig, GameSession, MatchResult } from '../types';
+import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair, GameConfig, GameSession } from '../types';
 import { defaultGameConfig, randomTeamEmoji, MUTUALLY_EXCLUSIVE_TAGS } from '../types';
 import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs, saveGameConfig, getGameConfig } from '../lib/storage';
 import { runDraw } from '../lib/sortAlgorithm';
 import { inferGender } from '../lib/genderInference';
 import { validateGameConfig } from '../lib/validation';
-import { processScoreNoSets, processEndMatch, rotateCourt } from '../domain/game';
-import { checkSetWinner, processSetScore } from '../domain/sets';
+import { processScoreNoSets, processEndMatch } from '../domain/game';
+import { processSetScore } from '../domain/sets';
 
 // ─── State ──────────────────────────────────────────────
 
@@ -320,9 +320,10 @@ function reducer(state: AppState, action: Action): AppState {
           side
         );
 
+        const { matchResult: _mr, ...gameUpdate } = result;
         return {
           ...state,
-          game: { ...game, ...result },
+          game: { ...game, ...gameUpdate },
         };
       }
 
@@ -346,9 +347,10 @@ function reducer(state: AppState, action: Action): AppState {
         side
       );
 
+      const { matchResult: _mr2, ...gameUpdate } = result;
       return {
         ...state,
-        game: { ...game, ...result },
+        game: { ...game, ...gameUpdate },
       };
     }
 

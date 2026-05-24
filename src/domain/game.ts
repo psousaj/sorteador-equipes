@@ -43,7 +43,6 @@ export interface ScoreOutput {
 // ─── Pure rotation logic ─────────────────────────────────
 
 export function rotateCourt(
-  playing: [number, number],
   queue: number[],
   winnerId: number,
   loserId: number,
@@ -101,8 +100,6 @@ export function updateReign(
 
 export function buildMatchResult(
   playing: [number, number],
-  winnerId: number,
-  loserId: number,
   score1: number,
   score2: number,
   currentSet: number,
@@ -111,15 +108,15 @@ export function buildMatchResult(
   allTeams: Team[],
   winnerSide: 'team1' | 'team2'
 ): MatchResult {
-  const winnerTeam = allTeams.find(t => t.id === winnerId)!;
-  const loserTeam = allTeams.find(t => t.id === loserId)!;
+  const team1Team = allTeams.find(t => t.id === playing[0])!;
+  const team2Team = allTeams.find(t => t.id === playing[1])!;
 
   return {
     id: crypto.randomUUID(),
     team1Id: playing[0],
     team2Id: playing[1],
-    team1Name: winnerTeam.name,
-    team2Name: loserTeam.name,
+    team1Name: team1Team.name,
+    team2Name: team2Team.name,
     score1,
     score2,
     setNumber: currentSet,
@@ -174,7 +171,7 @@ export function processScoreNoSets(
 
   // Build match result
   const matchResult = buildMatchResult(
-    playing, winnerId, loserId,
+    playing,
     newScores[0], newScores[1],
     1, [newScores[0]], [newScores[1]],
     allTeams, winner
@@ -182,7 +179,7 @@ export function processScoreNoSets(
 
   // Rotate
   const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
-    playing, queue, winnerId, loserId, winner,
+    queue, winnerId, loserId, winner,
     reign.reignCount >= config.maxWins
   );
 
@@ -226,7 +223,7 @@ export function processEndMatch(
   const finalScores2 = [...config.setScores2, scores[1]];
 
   const matchResult = buildMatchResult(
-    playing, winnerId, loserId,
+    playing,
     scores[0], scores[1],
     config.currentSet, finalScores1, finalScores2,
     allTeams, winnerSide

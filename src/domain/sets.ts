@@ -1,4 +1,4 @@
-import type { MatchResult, Team } from '../types';
+import type { MatchResult } from '../types';
 import { buildMatchResult, updateReign, rotateCourt } from './game';
 import type { ScoreInput, GameConfigSubset, ScoreOutput } from './game';
 
@@ -151,7 +151,7 @@ export function processSetScore(
 
   // The match was won (reached setsToWin sets)
   const matchResult = buildMatchResult(
-    playing, winnerTeamId, loserTeamId,
+    playing,
     newScores[0], newScores[1],
     currentSet, newSetScores1, newSetScores2,
     allTeams, setWinner
@@ -159,7 +159,7 @@ export function processSetScore(
 
   // Rotate
   const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
-    playing, queue, winnerTeamId, loserTeamId, setWinner,
+    queue, winnerTeamId, loserTeamId, setWinner,
     reign.reignCount >= config.maxWins
   );
 
