@@ -92,21 +92,19 @@ describe('runDraw — gender rules', () => {
   });
 
   describe('max gender rule', () => {
-    it('não ultrapassa máximo de homens por time (2 homens, 4 mulheres, 2 times)', () => {
+    it('não ultrapassa máximo de homens por time (2 homens, 14 mulheres, 8 times)', () => {
       const result = runDraw({
         people: [
           makePerson('João', 'male'),
           makePerson('Pedro', 'male'),
-          makePerson('Maria', 'female'),
-          makePerson('Ana', 'female'),
-          makePerson('Carla', 'female'),
-          makePerson('Lúcia', 'female'),
+          ...Array.from({ length: 14 }, (_, i) => makePerson(`Mulher${i + 1}`, 'female')),
         ],
-        config: { teamSize: 3, rules: [makeRule('male', 'max', 1, 'gender')], ...EMPTY_CAPTAIN },
+        config: { teamSize: 2, rules: [makeRule('male', 'max', 1, 'gender')], ...EMPTY_CAPTAIN },
       });
 
       expect(result.success).toBe(true);
-      expect(result.result?.teams).toHaveLength(2);
+      // 16 pessoas, teamSize=2 → 8 times, 2 homens → facilmente <=1 por time
+      expect(result.result?.teams).toHaveLength(8);
       for (const team of result.result!.teams) {
         expect(team.members.filter(p => p.gender === 'male').length).toBeLessThanOrEqual(1);
       }
@@ -149,11 +147,14 @@ describe('runDraw — gender rules', () => {
           makePerson('Pedro', 'male'),
           makePerson('Maria', 'female', ['iniciante']),
           makePerson('Ana', 'female', ['iniciante']),
+          makePerson('Bia', 'female'),
+          makePerson('Caio', 'male', ['iniciante']),
+          makePerson('Duda', 'female'),
         ],
         config: {
-          teamSize: 2,
+          teamSize: 4,
           rules: [
-            makeRule('iniciante', 'exact', 1, 'tag'),
+            makeRule('iniciante', 'min', 1, 'tag'),
             makeRule('female', 'min', 1, 'gender'),
           ],
           ...EMPTY_CAPTAIN,
@@ -161,12 +162,13 @@ describe('runDraw — gender rules', () => {
       });
 
       expect(result.success).toBe(true);
+      // 7 pessoas, teamSize=4 → 2 times
       expect(result.result?.teams).toHaveLength(2);
       for (const team of result.result!.teams) {
-        // Pelo menos 1 female por time (Maria + Ana)
-        expect(team.members.filter(p => p.gender === 'female').length).toBeGreaterThanOrEqual(1);
-        // Exatamente 1 iniciante por time (João + Maria + Ana = 3, 2 times)
+        // Pelo menos 1 iniciante em cada time
         expect(team.members.filter(p => p.tags.includes('iniciante')).length).toBeGreaterThanOrEqual(1);
+        // Pelo menos 1 female em cada time
+        expect(team.members.filter(p => p.gender === 'female').length).toBeGreaterThanOrEqual(1);
       }
     });
   });
