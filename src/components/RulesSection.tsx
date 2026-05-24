@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { useState } from 'react';
 import { RuleRow } from './RuleRow';
 import { DEFAULT_TAGS } from '../types';
+import { positiveInt } from '../lib/validation';
+import { toast } from 'sonner';
 import type { TeamRule } from '../types';
 import { playClickSound, playPopSound } from '../lib/sounds';
 
@@ -35,11 +37,16 @@ export function RulesSection({
 
   const handleAddRule = () => {
     if (!newRuleTag) return;
+    const result = positiveInt.safeParse(newRuleValue);
+    if (!result.success) {
+      toast.error(result.error.issues[0].message);
+      return;
+    }
     const rule: TeamRule = {
       id: uuidv4(),
       tag: newRuleTag,
       type: newRuleType,
-      perTeam: newRuleValue,
+      perTeam: result.data,
     };
     onAddRule(rule);
     setShowRuleForm(false);
@@ -119,7 +126,7 @@ export function RulesSection({
               type="number"
               min={1}
               value={newRuleValue}
-              onChange={(e) => setNewRuleValue(Math.max(1, parseInt(e.target.value) || 1))}
+              onChange={(e) => setNewRuleValue(Number(e.target.value))}
               className="w-16 text-center text-sm px-2 py-1.5 rounded-lg border focus:outline-none focus:border-brand"
             />
             <span className="text-xs text-gray-500 self-center">por time</span>

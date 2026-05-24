@@ -24,3 +24,6 @@ export type ValidatedGameConfig = z.infer<typeof gameConfigSchema>;
 export function validateGameConfig(data: unknown) {
   return gameConfigSchema.safeParse(data);
 }
+
+/** Schema for small positive integers (team size, per-team rule values) */
+export const positiveInt = z.coerce.number().int().min(1, 'Valor mínimo é 1').max(99, 'Valor máximo é 99');

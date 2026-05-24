@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateGameConfig } from '../../src/lib/validation';
+import { validateGameConfig, positiveInt } from '../../src/lib/validation';
 
 describe('validateGameConfig()', () => {
   it('aceita config padrão', () => {
@@ -38,5 +38,36 @@ describe('validateGameConfig()', () => {
   it('rejeita margin negativa', () => {
     const r = validateGameConfig({ margin: -1 });
     expect(r.success).toBe(false);
+  });
+});
+
+describe('positiveInt()', () => {
+  it('aceita 1', () => {
+    expect(positiveInt.safeParse(1).success).toBe(true);
+  });
+
+  it('aceita 99', () => {
+    expect(positiveInt.safeParse(99).success).toBe(true);
+  });
+
+  it('rejeita 0', () => {
+    const r = positiveInt.safeParse(0);
+    expect(r.success).toBe(false);
+  });
+
+  it('rejeita negativo', () => {
+    const r = positiveInt.safeParse(-5);
+    expect(r.success).toBe(false);
+  });
+
+  it('rejeita string vazia', () => {
+    const r = positiveInt.safeParse('');
+    expect(r.success).toBe(false);
+  });
+
+  it('coerce de string "2"', () => {
+    const r = positiveInt.safeParse('2');
+    expect(r.success).toBe(true);
+    expect(r.data).toBe(2);
   });
 });

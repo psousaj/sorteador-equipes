@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { X } from 'lucide-react';
+import { positiveInt } from '../lib/validation';
+import { toast } from 'sonner';
 import type { TeamRule } from '../types';
 
 interface RuleRowProps {
@@ -10,10 +13,25 @@ interface RuleRowProps {
 }
 
 export function RuleRow({ rule, tagLabel, tagColor, onRemove, onUpdate }: RuleRowProps) {
+  const [raw, setRaw] = useState(String(rule.perTeam));
+
   const typeLabel = {
     min: 'Mínimo',
     max: 'Máximo',
     exact: 'Exato',
+  };
+
+  const handleBlur = () => {
+    const result = positiveInt.safeParse(raw);
+    if (!result.success) {
+      toast.error(result.error.issues[0].message);
+      setRaw(String(rule.perTeam));
+      return;
+    }
+    if (result.data !== rule.perTeam) {
+      onUpdate(rule.id, result.data);
+    }
+    setRaw(String(result.data));
   };
 
   return (
@@ -25,8 +43,9 @@ export function RuleRow({ rule, tagLabel, tagColor, onRemove, onUpdate }: RuleRo
       <input
         type="number"
         min={1}
-        value={rule.perTeam}
-        onChange={(e) => onUpdate(rule.id, Math.max(1, parseInt(e.target.value) || 1))}
+        value={raw}
+        onChange={(e) => setRaw(e.target.value)}
+        onBlur={handleBlur}
         className="w-12 text-center text-sm font-bold text-gray-800 px-1 py-0.5 rounded-lg border border-gray-200 focus:outline-none focus:border-brand"
       />
       <span className="text-xs text-gray-400">por time</span>
