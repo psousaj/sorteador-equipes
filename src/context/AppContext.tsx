@@ -51,6 +51,8 @@ const initialState: AppState = {
     setScores2: [],
     currentSet: 1,
     wins: {},
+    reigningTeamId: null,
+    reignCount: 0,
     matchHistory: [],
     scoreHistory: [],
   },
@@ -329,6 +331,8 @@ function reducer(state: AppState, action: Action): AppState {
           setScores2: [],
           currentSet: 1,
           wins,
+          reigningTeamId: null,
+          reignCount: 0,
           matchHistory: [],
           scoreHistory: [],
         },
@@ -393,13 +397,30 @@ function reducer(state: AppState, action: Action): AppState {
         const newWins = { ...game.wins };
         newWins[winnerId] = (newWins[winnerId] || 0) + 1;
 
+        // ── Lógica de reinado ──────────────────────
+        let newReigningTeamId = game.reigningTeamId;
+        let newReignCount = game.reignCount;
+
+        if (newReigningTeamId === null) {
+          // Primeira partida — estabelece o reinado
+          newReigningTeamId = winnerId;
+          newReignCount = 1;
+        } else if (winnerId === newReigningTeamId) {
+          // Mesmo campeão venceu de novo — reinado continua
+          newReignCount += 1;
+        } else {
+          // Novo campeão — reinado caiu
+          newReigningTeamId = winnerId;
+          newReignCount = 1;
+        }
+
         const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
           game.playing,
           game.queue,
           winnerId,
           loserId,
           winner,
-          newWins[winnerId] >= game.config.maxWins
+          newReignCount >= game.config.maxWins   // ← usa reignCount, não wins total
         );
 
         return {
@@ -413,6 +434,8 @@ function reducer(state: AppState, action: Action): AppState {
             playing: newPlaying,
             queue: newQueue,
             wins: newWins,
+            reigningTeamId: newReigningTeamId,
+            reignCount: newReignCount,
             matchHistory: [...game.matchHistory, matchResult],
             isActive,
             scoreHistory: [],
@@ -458,6 +481,20 @@ function reducer(state: AppState, action: Action): AppState {
       const loserTeamId = setWinner === 'team1' ? game.playing[1] : game.playing[0];
       newWins[winnerTeamId] = (newWins[winnerTeamId] || 0) + 1;
 
+      // ── Lógica de reinado ──────────────────────
+      let newReigningTeamId = game.reigningTeamId;
+      let newReignCount = game.reignCount;
+
+      if (newReigningTeamId === null) {
+        newReigningTeamId = winnerTeamId;
+        newReignCount = 1;
+      } else if (winnerTeamId === newReigningTeamId) {
+        newReignCount += 1;
+      } else {
+        newReigningTeamId = winnerTeamId;
+        newReignCount = 1;
+      }
+
       const newCurrentSet = game.currentSet + 1;
       const matchWinner = newWins[winnerTeamId] >= game.config.setsToWin;
 
@@ -501,7 +538,7 @@ function reducer(state: AppState, action: Action): AppState {
         winnerTeamId,
         loserTeamId,
         setWinner,
-        newWins[winnerTeamId] >= game.config.maxWins
+        newReignCount >= game.config.maxWins   // ← usa reignCount, não wins total
       );
 
       return {
@@ -515,6 +552,8 @@ function reducer(state: AppState, action: Action): AppState {
           playing: newPlaying,
           queue: newQueue,
           wins: newWins,
+          reigningTeamId: newReigningTeamId,
+          reignCount: newReignCount,
           matchHistory: [...game.matchHistory, matchResult],
           isActive,
           scoreHistory: [],
@@ -649,6 +688,20 @@ function reducer(state: AppState, action: Action): AppState {
         winner: winnerSide,
       };
 
+      // ── Lógica de reinado no END_MATCH ───────────
+      let newReigningTeamId = game.reigningTeamId;
+      let newReignCount = game.reignCount;
+
+      if (newReigningTeamId === null) {
+        newReigningTeamId = winnerId;
+        newReignCount = 1;
+      } else if (winnerId === newReigningTeamId) {
+        newReignCount += 1;
+      } else {
+        newReigningTeamId = winnerId;
+        newReignCount = 1;
+      }
+
       return {
         ...state,
         screen: 'gameover',
@@ -660,6 +713,8 @@ function reducer(state: AppState, action: Action): AppState {
           currentSet: 1,
           playing: null,
           queue: [],
+          reigningTeamId: newReigningTeamId,
+          reignCount: newReignCount,
           matchHistory: [...game.matchHistory, matchResult],
           isActive: false,
           scoreHistory: [],
@@ -693,6 +748,8 @@ function reducer(state: AppState, action: Action): AppState {
           setScores2: [],
           currentSet: 1,
           wins: {},
+          reigningTeamId: null,
+          reignCount: 0,
           matchHistory: [],
           scoreHistory: [],
         },

@@ -88,7 +88,9 @@ export interface GameSession {
   setScores1: number[];                         // pontuação de cada set (time 1)
   setScores2: number[];                         // pontuação de cada set (time 2)
   currentSet: number;                           // set atual (1-indexed)
-  wins: Record<number, number>;                 // teamId -> wins
+  wins: Record<number, number>;                 // teamId -> wins (total geral)
+  reigningTeamId: number | null;                // time campeão atual (quem tá reinando)
+  reignCount: number;                           // vitórias consecutivas do campeão atual
   matchHistory: MatchResult[];
   scoreHistory: [number, number][];             // histórico de scores p/ undo
 }
