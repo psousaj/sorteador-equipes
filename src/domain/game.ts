@@ -106,7 +106,8 @@ export function buildMatchResult(
   setScores1: number[],
   setScores2: number[],
   allTeams: Team[],
-  winnerSide: 'team1' | 'team2'
+  winnerSide: 'team1' | 'team2',
+  rotation: 'loser_out' | 'both_out'
 ): MatchResult {
   const team1Team = allTeams.find(t => t.id === playing[0])!;
   const team2Team = allTeams.find(t => t.id === playing[1])!;
@@ -123,6 +124,7 @@ export function buildMatchResult(
     setScores1,
     setScores2,
     winner: winnerSide,
+    rotation,
   };
 }
 
@@ -169,18 +171,22 @@ export function processScoreNoSets(
   // Reign
   const reign = updateReign(reigningTeamId, reignCount, winnerId);
 
+  // Rotate check
+  const hitMaxWins = reign.reignCount >= config.maxWins;
+
   // Build match result
   const matchResult = buildMatchResult(
     playing,
     newScores[0], newScores[1],
     1, [newScores[0]], [newScores[1]],
-    allTeams, winner
+    allTeams, winner,
+    hitMaxWins ? 'both_out' : 'loser_out'
   );
 
   // Rotate
   const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
     queue, winnerId, loserId, winner,
-    reign.reignCount >= config.maxWins
+    hitMaxWins
   );
 
   return {
@@ -226,7 +232,8 @@ export function processEndMatch(
     playing,
     scores[0], scores[1],
     config.currentSet, finalScores1, finalScores2,
-    allTeams, winnerSide
+    allTeams, winnerSide,
+    'both_out'
   );
 
   const reign = updateReign(reigningTeamId, reignCount, winnerId);
@@ -238,7 +245,7 @@ export function processEndMatch(
     wins,
     reigningTeamId: reign.reigningTeamId,
     reignCount: reign.reignCount,
-    matchHistory: [...matchHistory, matchResult],
+    matchHistory: [...matchHistory, { ...matchResult, rotation: 'both_out' }],
     scoreHistory: [],
     isActive: false,
     currentSet: 1,

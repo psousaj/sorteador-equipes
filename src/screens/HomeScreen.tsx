@@ -80,7 +80,10 @@ export function HomeScreen() {
 
   // Available tags for rules (default tags + user tags + template tags)
   const availableRuleTags = useMemo(() => {
-    return [...DEFAULT_TAGS.map(t => ({ value: t.value, label: t.label })), ...allTags.map(t => ({ value: t, label: t }))];
+    return [
+      ...DEFAULT_TAGS.map(t => ({ value: t.value, label: t.label })),
+      ...allTags.map(t => ({ value: t, label: t })),
+    ];
   }, [allTags]);
 
   // Available tags for person assignment (default + user + template)

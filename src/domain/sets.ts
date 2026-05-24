@@ -150,17 +150,19 @@ export function processSetScore(
   }
 
   // The match was won (reached setsToWin sets)
+  const hitMaxWins = reign.reignCount >= config.maxWins;
   const matchResult = buildMatchResult(
     playing,
     newScores[0], newScores[1],
     currentSet, newSetScores1, newSetScores2,
-    allTeams, setWinner
+    allTeams, setWinner,
+    hitMaxWins ? 'both_out' : 'loser_out'
   );
 
   // Rotate
   const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
     queue, winnerTeamId, loserTeamId, setWinner,
-    reign.reignCount >= config.maxWins
+    hitMaxWins
   );
 
   return {

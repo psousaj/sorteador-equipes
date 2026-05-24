@@ -13,6 +13,14 @@ interface DrawValidation {
 }
 
 /**
+ * Check if a person matches a rule (handles gender via rule.kind)
+ */
+function personMatchesRule(person: Person, rule: TeamRule): boolean {
+  if (rule.kind === 'gender') return person.gender === rule.tag;
+  return person.tags.includes(rule.tag);
+}
+
+/**
  * Validates if the draw rules are feasible with the given people.
  */
 function validateDraw(input: DrawInput): DrawValidation {
@@ -42,8 +50,9 @@ function validateDraw(input: DrawInput): DrawValidation {
 
   const numTeams = Math.ceil(people.length / config.teamSize);
 
-  for (const [tag, rules] of rulesByTag) {
-    const peopleWithTag = people.filter(p => p.tags.includes(tag)).length;
+  for (const [_tag, rules] of rulesByTag) {
+    const firstRule = rules[0];
+    const peopleWithTag = people.filter(p => personMatchesRule(p, firstRule)).length;
 
     for (const rule of rules) {
       if (rule.type === 'exact') {
@@ -51,14 +60,14 @@ function validateDraw(input: DrawInput): DrawValidation {
         if (peopleWithTag < needed) {
           const neededTotal = rule.perTeam * numTeams;
           errors.push(
-            `Regra "exatamente ${rule.perTeam} ${tag}" precisa de ${neededTotal} pessoa(s), mas só tem ${peopleWithTag}.`
+            `Regra "exatamente ${rule.perTeam} ${rule.tag}" precisa de ${neededTotal} pessoa(s), mas só tem ${peopleWithTag}.`
           );
         }
       } else if (rule.type === 'min') {
         const needed = rule.perTeam * numTeams;
         if (peopleWithTag < needed) {
           errors.push(
-            `Regra "mínimo ${rule.perTeam} ${tag}" precisa de pelo menos ${needed} pessoa(s), mas só tem ${peopleWithTag}.`
+            `Regra "mínimo ${rule.perTeam} ${rule.tag}" precisa de pelo menos ${needed} pessoa(s), mas só tem ${peopleWithTag}.`
           );
         }
       }
@@ -136,8 +145,8 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
   // 2. Handle exact rules — distribute people with exact-match tags
   const exactRules = config.rules.filter(r => r.type === 'exact');
   for (const rule of exactRules) {
-    const candidates = everyone.filter(p => p.tags.includes(rule.tag));
-    everyone = everyone.filter(p => !p.tags.includes(rule.tag));
+    const candidates = everyone.filter(p => personMatchesRule(p, rule));
+    everyone = everyone.filter(p => !personMatchesRule(p, rule));
 
     const shuffled = shuffle(candidates);
     let personIdx = 0;
@@ -153,7 +162,7 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
   const minRules = config.rules.filter(r => r.type === 'min');
   for (const rule of minRules) {
     // People with this tag who haven't been placed yet
-    const candidates = everyone.filter(p => p.tags.includes(rule.tag) && !teams.some(t => t.includes(p)));
+    const candidates = everyone.filter(p => personMatchesRule(p, rule) && !teams.some(t => t.includes(p)));
     everyone = everyone.filter(p => !candidates.includes(p));
 
     const shuffled = shuffle(candidates);
@@ -187,7 +196,7 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
   const maxRules = config.rules.filter(r => r.type === 'max');
   for (const rule of maxRules) {
     for (let i = 0; i < numTeams; i++) {
-      const count = teams[i].filter(p => p.tags.includes(rule.tag)).length;
+      const count = teams[i].filter(p => personMatchesRule(p, rule)).length;
       if (count > rule.perTeam) {
         errors.push(`Time ${i + 1} tem ${count} "${rule.tag}", mas o máximo é ${rule.perTeam}.`);
       }
@@ -235,8 +244,8 @@ function performDraw(input: DrawInput): { teams: Team[]; errors: string[] } {
       // Check max rules
       let violatesMax = false;
       for (const rule of maxRules) {
-        if (person.tags.includes(rule.tag)) {
-          const currentCount = team.filter(p => p.tags.includes(rule.tag)).length;
+        if (personMatchesRule(person, rule)) {
+          const currentCount = team.filter(p => personMatchesRule(p, rule)).length;
           if (currentCount + 1 > rule.perTeam) {
             violatesMax = true;
             break;
