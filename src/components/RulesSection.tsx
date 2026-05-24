@@ -12,6 +12,7 @@ interface RulesSectionProps {
   soundEnabled: boolean;
   onAddRule: (rule: TeamRule) => void;
   onRemoveRule: (id: string) => void;
+  onUpdateRule: (id: string, perTeam: number) => void;
 }
 
 const TAG_COLORS: Record<string, string> = {
@@ -25,6 +26,7 @@ export function RulesSection({
   soundEnabled,
   onAddRule,
   onRemoveRule,
+  onUpdateRule,
 }: RulesSectionProps) {
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [newRuleTag, setNewRuleTag] = useState('');
@@ -79,6 +81,7 @@ export function RulesSection({
                 tagLabel={tagLabel}
                 tagColor={tagColor}
                 onRemove={onRemoveRule}
+                onUpdate={onUpdateRule}
               />
             );
           })}

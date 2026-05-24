@@ -70,6 +70,7 @@ type Action =
   | { type: 'SET_TEAM_SIZE'; payload: number }
   | { type: 'ADD_RULE'; payload: TeamRule }
   | { type: 'REMOVE_RULE'; payload: string }
+  | { type: 'UPDATE_RULE'; payload: { id: string; perTeam: number } }
   | { type: 'SET_CAPTAIN_TAG'; payload: string }
   | { type: 'TOGGLE_CAPTAIN'; payload: boolean }
   | { type: 'TOGGLE_BLOCKED_PAIR'; payload: { personId1: string; personId2: string } }
@@ -121,6 +122,14 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'REMOVE_RULE':
       return { ...state, rules: state.rules.filter(r => r.id !== action.payload) };
+
+    case 'UPDATE_RULE':
+      return {
+        ...state,
+        rules: state.rules.map(r =>
+          r.id === action.payload.id ? { ...r, perTeam: action.payload.perTeam } : r
+        ),
+      };
 
     case 'SET_CAPTAIN_TAG':
       return { ...state, captainTag: action.payload };

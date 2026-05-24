@@ -36,6 +36,13 @@ export function PeopleInput({
     prevCountRef.current = importCount;
   }, [importCount]);
 
+  // Reset textarea height when cleared programmatically
+  useEffect(() => {
+    if (textareaRef.current && !importedNames) {
+      textareaRef.current.style.height = 'auto';
+    }
+  }, [importedNames, textareaRef]);
+
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
       <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">

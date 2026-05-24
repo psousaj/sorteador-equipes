@@ -301,6 +301,7 @@ export function HomeScreen() {
               soundEnabled={soundEnabled}
               onAddRule={handleAddRule}
               onRemoveRule={handleRemoveRule}
+              onUpdateRule={(id, perTeam) => dispatch({ type: 'UPDATE_RULE', payload: { id, perTeam } })}
             />
 
             <CaptainToggle
