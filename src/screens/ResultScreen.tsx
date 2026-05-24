@@ -11,6 +11,7 @@ export function ResultScreen() {
   const { currentResult } = state;
   const [copied, setCopied] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false);
+  const [showTags, setShowTags] = useState(true);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -87,7 +88,7 @@ export function ResultScreen() {
       lines.push(`*${displayEmoji} ${displayName}*`);
       team.members.forEach(m => {
         const isCaptain = team.captain?.id === m.id;
-        const tags = m.tags.filter(t => t !== 'masculino' && t !== 'feminino').join(', ');
+        const tags = showTags ? m.tags.filter(t => t !== 'masculino' && t !== 'feminino').join(', ') : '';
         const tagStr = tags ? ` (${tags})` : '';
         lines.push(`${isCaptain ? '👑 ' : ''}${m.name}${tagStr}`);
       });
@@ -302,7 +303,22 @@ export function ResultScreen() {
             </button>
           </div>
 
-          {/* Row 2: Copy + Share */}
+          {/* Row 2: Tags toggle */}
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowTags(!showTags)}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                showTags
+                  ? 'bg-indigo-100 text-indigo-700'
+                  : 'bg-gray-100 text-gray-500'
+              }`}
+            >
+              <span className={showTags ? 'opacity-100' : 'opacity-40'}>🏷️</span>
+              Tags: {showTags ? 'ON' : 'OFF'}
+            </button>
+          </div>
+
+          {/* Row 3: Copy + Share */}
           <div className="flex flex-wrap gap-3 justify-center">
             <button
               onClick={handleCopy}

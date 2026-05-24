@@ -11,6 +11,7 @@ export interface TeamRule {
   tag: string;
   type: 'exact' | 'min' | 'max';
   perTeam: number;
+  kind: 'tag' | 'gender';
 }
 
 export interface DrawConfig {
@@ -76,6 +77,7 @@ export interface MatchResult {
   setScores1: number[];       // histórico de todos os sets (time 1)
   setScores2: number[];       // histórico de todos os sets (time 2)
   winner: 'team1' | 'team2';
+  rotation: 'loser_out' | 'both_out';
 }
 
 export interface GameSession {

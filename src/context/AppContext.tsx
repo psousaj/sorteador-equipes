@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair, GameConfig, GameSession, MatchResult } from '../types';
+import type { Person, TeamRule, DrawConfig, Team, DrawResult, Screen, BlockedPair, GameConfig, GameSession } from '../types';
 import { defaultGameConfig, randomTeamEmoji, MUTUALLY_EXCLUSIVE_TAGS } from '../types';
 import { getLastConfig, saveLastConfig, saveToHistory, saveBlockedPairs, getBlockedPairs, saveGameConfig, getGameConfig } from '../lib/storage';
 import { runDraw } from '../lib/sortAlgorithm';
 import { inferGender } from '../lib/genderInference';
 import { validateGameConfig } from '../lib/validation';
+import { processScoreNoSets, processEndMatch } from '../domain/game';
+import { processSetScore } from '../domain/sets';
 
 // ─── State ──────────────────────────────────────────────
 
@@ -68,6 +70,7 @@ type Action =
   | { type: 'SET_TEAM_SIZE'; payload: number }
   | { type: 'ADD_RULE'; payload: TeamRule }
   | { type: 'REMOVE_RULE'; payload: string }
+  | { type: 'UPDATE_RULE'; payload: { id: string; perTeam: number } }
   | { type: 'SET_CAPTAIN_TAG'; payload: string }
   | { type: 'TOGGLE_CAPTAIN'; payload: boolean }
   | { type: 'TOGGLE_BLOCKED_PAIR'; payload: { personId1: string; personId2: string } }
@@ -95,57 +98,7 @@ type Action =
   | { type: 'RESTART_MATCH' }
   | { type: 'CLOSE_GAME' };
 
-// ─── Pure rotation logic ─────────────────────────────────
-
-interface RotateResult {
-  playing: [number, number] | null;
-  queue: number[];
-  isActive: boolean;
-}
-
-function rotateCourt(
-  playing: [number, number],
-  queue: number[],
-  winnerId: number,
-  loserId: number,
-  winner: 'team1' | 'team2',
-  hitMaxWins: boolean
-): RotateResult {
-  if (hitMaxWins) {
-    // MODE 2: campeão bateu limite — ambos saem
-    // 1. promove até 2 da fila
-    const promoted = queue.slice(0, 2);
-    const newQueue = [winnerId, ...queue.slice(2), loserId];
-    // winner → topo, loser → final
-
-    // 2. monta quadra
-    if (promoted.length >= 2) {
-      return { playing: [promoted[0], promoted[1]], queue: newQueue, isActive: true };
-    }
-    if (promoted.length === 1) {
-      // Só 1 disponível — completa com o winner (que está no topo da fila)
-      return { playing: [promoted[0], winnerId], queue: newQueue.slice(1), isActive: true };
-    }
-    // Nenhum na fila — tenta completar com winner e loser
-    if (newQueue.length >= 2) {
-      return { playing: [newQueue[0], newQueue[1]], queue: newQueue.slice(2), isActive: true };
-    }
-    return { playing: null, queue: newQueue, isActive: false };
-  }
-
-  // MODE 1: vitória normal — winner fica, loser pro final
-  const newQueue = [...queue, loserId];
-  if (newQueue.length >= 1) {
-    const nextTeamId = newQueue[0];
-    const remainingQueue = newQueue.slice(1);
-    // Winner joga no lado original
-    const newPlaying: [number, number] = winner === 'team1'
-      ? [winnerId, nextTeamId]
-      : [nextTeamId, winnerId];
-    return { playing: newPlaying, queue: remainingQueue, isActive: true };
-  }
-  return { playing: null, queue: newQueue, isActive: false };
-}
+// ─── Reducer ─────────────────────────────────────────────
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -169,6 +122,14 @@ function reducer(state: AppState, action: Action): AppState {
 
     case 'REMOVE_RULE':
       return { ...state, rules: state.rules.filter(r => r.id !== action.payload) };
+
+    case 'UPDATE_RULE':
+      return {
+        ...state,
+        rules: state.rules.map(r =>
+          r.id === action.payload.id ? { ...r, perTeam: action.payload.perTeam } : r
+        ),
+      };
 
     case 'SET_CAPTAIN_TAG':
       return { ...state, captainTag: action.payload };
@@ -352,212 +313,53 @@ function reducer(state: AppState, action: Action): AppState {
       }
 
       if (!game.config.setsEnabled) {
-        // ── Traditional mode (no sets) ───────────────────
-        const newScores: [number, number] = [...game.scores] as [number, number];
-        newScores[idx] += 1;
-        const { pointsToWin } = game.config;
-
-        // Check if someone reached the target
-        const team1Won = newScores[0] >= pointsToWin;
-        const team2Won = newScores[1] >= pointsToWin;
-
-        if (!team1Won && !team2Won) {
-          // Save history, no winner yet
-      return {
-        ...state,
-        game: {
-              ...game,
-              scores: newScores,
-              scoreHistory: [...game.scoreHistory, [...game.scores] as [number, number]],
-            },
-          };
-        }
-
-        // A match was won — record result and rotate
-        const winner = team1Won ? 'team1' as const : 'team2' as const;
-        const winnerId = winner === 'team1' ? game.playing[0] : game.playing[1];
-        const loserId = winner === 'team1' ? game.playing[1] : game.playing[0];
-        const winnerTeam = game.allTeams.find(t => t.id === winnerId)!;
-        const loserTeam = game.allTeams.find(t => t.id === loserId)!;
-
-        const matchResult: MatchResult = {
-          id: uuidv4(),
-          team1Id: game.playing[0],
-          team2Id: game.playing[1],
-          team1Name: winnerTeam.name,
-          team2Name: loserTeam.name,
-          score1: newScores[0],
-          score2: newScores[1],
-          setNumber: 1,
-          setScores1: [newScores[0]],
-          setScores2: [newScores[1]],
-          winner,
-        };
-
-        const newWins = { ...game.wins };
-        newWins[winnerId] = (newWins[winnerId] || 0) + 1;
-
-        // ── Lógica de reinado ──────────────────────
-        let newReigningTeamId = game.reigningTeamId;
-        let newReignCount = game.reignCount;
-
-        if (newReigningTeamId === null) {
-          // Primeira partida — estabelece o reinado
-          newReigningTeamId = winnerId;
-          newReignCount = 1;
-        } else if (winnerId === newReigningTeamId) {
-          // Mesmo campeão venceu de novo — reinado continua
-          newReignCount += 1;
-        } else {
-          // Novo campeão — reinado caiu
-          newReigningTeamId = winnerId;
-          newReignCount = 1;
-        }
-
-        const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
-          game.playing,
-          game.queue,
-          winnerId,
-          loserId,
-          winner,
-          newReignCount >= game.config.maxWins   // ← usa reignCount, não wins total
+        const result = processScoreNoSets(
+          {
+            playing: game.playing,
+            queue: game.queue,
+            scores: game.scores,
+            wins: game.wins,
+            reigningTeamId: game.reigningTeamId,
+            reignCount: game.reignCount,
+            allTeams: game.allTeams,
+            matchHistory: game.matchHistory,
+            scoreHistory: game.scoreHistory,
+          },
+          game.config,
+          side
         );
 
+        const { matchResult: _mr, ...gameUpdate } = result;
         return {
           ...state,
-          game: {
-            ...game,
-            scores: [0, 0],
-            setScores1: [],
-            setScores2: [],
-            currentSet: 1,
-            playing: newPlaying,
-            queue: newQueue,
-            wins: newWins,
-            reigningTeamId: newReigningTeamId,
-            reignCount: newReignCount,
-            matchHistory: [...game.matchHistory, matchResult],
-            isActive,
-            scoreHistory: [],
-          },
+          game: { ...game, ...gameUpdate },
         };
       }
 
       // ── Sets mode ──────────────────────────────────────
-      const newScoreHistory: [number, number][] = [
-        ...game.scoreHistory,
-        [...game.scores] as [number, number],
-      ];
-      const newScores: [number, number] = [...game.scores] as [number, number];
-      newScores[idx] += 1;
-
-      const { pointsToWin, margin } = game.config;
-
-      // Check set win condition: reached pointsToWin WITH margin
-      const setWinner: 'team1' | 'team2' | null =
-        newScores[0] >= pointsToWin && Math.abs(newScores[0] - newScores[1]) >= margin
-          ? 'team1'
-          : newScores[1] >= pointsToWin && Math.abs(newScores[0] - newScores[1]) >= margin
-            ? 'team2'
-            : null;
-
-      if (setWinner === null) {
-        // No set winner yet
-        return {
-          ...state,
-          game: {
-            ...game,
-            scores: newScores,
-            scoreHistory: newScoreHistory,
-          },
-        };
-      }
-
-      // A set was won
-      const newSetScores1 = [...game.setScores1, newScores[0]];
-      const newSetScores2 = [...game.setScores2, newScores[1]];
-      const newWins = { ...game.wins };
-      const winnerTeamId = setWinner === 'team1' ? game.playing[0] : game.playing[1];
-      const loserTeamId = setWinner === 'team1' ? game.playing[1] : game.playing[0];
-      newWins[winnerTeamId] = (newWins[winnerTeamId] || 0) + 1;
-
-      // ── Lógica de reinado ──────────────────────
-      let newReigningTeamId = game.reigningTeamId;
-      let newReignCount = game.reignCount;
-
-      if (newReigningTeamId === null) {
-        newReigningTeamId = winnerTeamId;
-        newReignCount = 1;
-      } else if (winnerTeamId === newReigningTeamId) {
-        newReignCount += 1;
-      } else {
-        newReigningTeamId = winnerTeamId;
-        newReignCount = 1;
-      }
-
-      const newCurrentSet = game.currentSet + 1;
-      const matchWinner = newWins[winnerTeamId] >= game.config.setsToWin;
-
-      if (!matchWinner) {
-        // Same teams continue, new set
-        return {
-          ...state,
-          game: {
-            ...game,
-            scores: [0, 0],
-            currentSet: newCurrentSet,
-            setScores1: newSetScores1,
-            setScores2: newSetScores2,
-            wins: newWins,
-            scoreHistory: [],
-          },
-        };
-      }
-
-      // The match was won (reached setsToWin sets)
-      const matchWinnerTeam = game.allTeams.find(t => t.id === winnerTeamId)!;
-      const matchLoserTeam = game.allTeams.find(t => t.id === loserTeamId)!;
-
-      const matchResult: MatchResult = {
-        id: uuidv4(),
-        team1Id: game.playing[0],
-        team2Id: game.playing[1],
-        team1Name: matchWinnerTeam.name,
-        team2Name: matchLoserTeam.name,
-        score1: newScores[0],
-        score2: newScores[1],
-        setNumber: game.currentSet,
-        setScores1: newSetScores1,
-        setScores2: newSetScores2,
-        winner: setWinner,
-      };
-
-      const { playing: newPlaying, queue: newQueue, isActive } = rotateCourt(
-        game.playing,
-        game.queue,
-        winnerTeamId,
-        loserTeamId,
-        setWinner,
-        newReignCount >= game.config.maxWins   // ← usa reignCount, não wins total
+      const result = processSetScore(
+        {
+          playing: game.playing,
+          queue: game.queue,
+          scores: game.scores,
+          wins: game.wins,
+          reigningTeamId: game.reigningTeamId,
+          reignCount: game.reignCount,
+          allTeams: game.allTeams,
+          matchHistory: game.matchHistory,
+          scoreHistory: game.scoreHistory,
+          currentSet: game.currentSet,
+          setScores1: game.setScores1,
+          setScores2: game.setScores2,
+        },
+        game.config,
+        side
       );
 
+      const { matchResult: _mr2, ...gameUpdate } = result;
       return {
         ...state,
-        game: {
-          ...game,
-          scores: [0, 0],
-          currentSet: 1,
-          setScores1: [],
-          setScores2: [],
-          playing: newPlaying,
-          queue: newQueue,
-          wins: newWins,
-          reigningTeamId: newReigningTeamId,
-          reignCount: newReignCount,
-          matchHistory: [...game.matchHistory, matchResult],
-          isActive,
-          scoreHistory: [],
-        },
+        game: { ...game, ...gameUpdate },
       };
     }
 
@@ -665,60 +467,29 @@ function reducer(state: AppState, action: Action): AppState {
         return state;
       }
 
-      const winnerSide: 'team1' | 'team2' = game.scores[0] > game.scores[1] ? 'team1' : 'team2';
-      const winnerId = winnerSide === 'team1' ? game.playing[0] : game.playing[1];
-      const loserId = winnerSide === 'team1' ? game.playing[1] : game.playing[0];
-      const winnerTeam = game.allTeams.find(t => t.id === winnerId)!;
-      const loserTeam = game.allTeams.find(t => t.id === loserId)!;
-
-      const finalScores1 = [...game.setScores1, game.scores[0]];
-      const finalScores2 = [...game.setScores2, game.scores[1]];
-
-      const matchResult: MatchResult = {
-        id: uuidv4(),
-        team1Id: game.playing[0],
-        team2Id: game.playing[1],
-        team1Name: winnerTeam.name,
-        team2Name: loserTeam.name,
-        score1: game.scores[0],
-        score2: game.scores[1],
-        setNumber: game.currentSet,
-        setScores1: finalScores1,
-        setScores2: finalScores2,
-        winner: winnerSide,
-      };
-
-      // ── Lógica de reinado no END_MATCH ───────────
-      let newReigningTeamId = game.reigningTeamId;
-      let newReignCount = game.reignCount;
-
-      if (newReigningTeamId === null) {
-        newReigningTeamId = winnerId;
-        newReignCount = 1;
-      } else if (winnerId === newReigningTeamId) {
-        newReignCount += 1;
-      } else {
-        newReigningTeamId = winnerId;
-        newReignCount = 1;
-      }
+      const result = processEndMatch(
+        {
+          playing: game.playing,
+          queue: game.queue,
+          scores: game.scores,
+          wins: game.wins,
+          reigningTeamId: game.reigningTeamId,
+          reignCount: game.reignCount,
+          allTeams: game.allTeams,
+          matchHistory: game.matchHistory,
+          scoreHistory: game.scoreHistory,
+        },
+        {
+          currentSet: game.currentSet,
+          setScores1: game.setScores1,
+          setScores2: game.setScores2,
+        }
+      );
 
       return {
         ...state,
         screen: 'gameover',
-        game: {
-          ...game,
-          scores: [0, 0],
-          setScores1: [],
-          setScores2: [],
-          currentSet: 1,
-          playing: null,
-          queue: [],
-          reigningTeamId: newReigningTeamId,
-          reignCount: newReignCount,
-          matchHistory: [...game.matchHistory, matchResult],
-          isActive: false,
-          scoreHistory: [],
-        },
+        game: { ...game, ...result },
       };
     }
 

@@ -169,7 +169,7 @@ export function AnimationScreen() {
                       className="w-3 h-3 rounded-full inline-block"
                       style={{ backgroundColor: colors.hex }}
                     />
-                    Time {team.id}
+                    {team.emoji} {team.name}
                   </h3>
                   <div className="space-y-1">
                     {team.members.map(m => {

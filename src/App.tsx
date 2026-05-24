@@ -5,6 +5,7 @@ import { ResultScreen } from './screens/ResultScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { GameScreen } from './screens/GameScreen';
 import { GameOverScreen } from './screens/GameOverScreen';
+import { Toaster } from 'sonner';
 
 function ScreenRouter() {
   const { state } = useApp();
@@ -31,6 +32,19 @@ function App() {
   return (
     <AppProvider>
       <ScreenRouter />
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#FFF5F0',
+            border: '2px solid #FF8C42',
+            color: '#4A2800',
+            fontFamily: '"Inter", sans-serif',
+            fontSize: '14px',
+            fontWeight: 500,
+          },
+        }}
+      />
     </AppProvider>
   );
 }

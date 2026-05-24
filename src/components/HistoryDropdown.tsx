@@ -46,21 +46,32 @@ export function HistoryDropdown({ isOpen, onClose, matchHistory }: Props) {
                 {matchHistory.map((match, idx) => (
                   <div
                     key={match.id}
-                    className="bg-gray-50 rounded-xl p-3 flex items-center justify-between"
+                    className="bg-gray-50 rounded-xl p-3"
                   >
-                    <div className="text-sm text-gray-700 flex-1 min-w-0">
-                      <span className="font-medium truncate">{match.team1Name}</span>
-                      <span className="text-gray-400 mx-1">vs</span>
-                      <span className="font-medium truncate">{match.team2Name}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-700 flex-1 min-w-0">
+                        <span className="font-medium truncate">{match.team1Name}</span>
+                        <span className="text-gray-400 mx-1">vs</span>
+                        <span className="font-medium truncate">{match.team2Name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 ml-2 shrink-0">
+                        <span className={`text-sm font-bold tabular-nums ${
+                          match.winner === 'team1' ? 'text-blue-600' : 'text-red-600'
+                        }`}>
+                          {match.score1} × {match.score2}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-2 shrink-0">
-                      <span className={`text-sm font-bold tabular-nums ${
-                        match.winner === 'team1' ? 'text-blue-600' : 'text-red-600'
-                      }`}>
-                        {match.score1} × {match.score2}
-                      </span>
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
                         Partida {idx + 1}
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                        match.rotation === 'both_out'
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {match.rotation === 'both_out' ? '⟳ Ambos saem' : '↩ Perdedor sai'}
                       </span>
                     </div>
                   </div>
