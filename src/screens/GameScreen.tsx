@@ -5,7 +5,6 @@ import { MenuButton } from '../components/MenuButton';
 import { HistoryDropdown } from '../components/HistoryDropdown';
 import { ThemeModal } from '../components/ThemeModal';
 import { GameConfigModal } from '../components/GameConfigModal';
-import confetti from 'canvas-confetti';
 
 export function GameScreen() {
   const { state, dispatch } = useApp();
@@ -28,6 +27,12 @@ export function GameScreen() {
   const [showConfig, setShowConfig] = useState(false);
   const celebratedRef = useRef(false);
   const [menuExpanded, setMenuExpanded] = useState(false);
+
+  // prefers-reduced-motion
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
 
   // Timer state
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -121,7 +126,9 @@ export function GameScreen() {
     if (leftScore >= game.config.pointsToWin || rightScore >= game.config.pointsToWin) {
       if (!celebratedRef.current) {
         celebratedRef.current = true;
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+        import('canvas-confetti').then(({ default: confetti }) => {
+          confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+        });
         new Audio("https://www.soundjay.com/misc/sounds/applause-1.mp3").play().catch(() => {});
       }
     } else {
@@ -143,12 +150,26 @@ export function GameScreen() {
   }, [game.allTeams, dispatch]);
 
   // Background color
+  // Color scheme for dark mode (fixes scrollbar, inputs)
+  useEffect(() => {
+    const html = document.documentElement;
+    if (isDark) {
+      html.style.colorScheme = 'dark';
+    } else {
+      html.style.colorScheme = '';
+    }
+    return () => { html.style.colorScheme = ''; };
+  }, [isDark]);
+
   const bgStyle = isDark
     ? { background: 'linear-gradient(180deg, #1a237e 50%, #b71c1c 50%)' }
     : { background: 'linear-gradient(90deg, #2979D0 50%, #C0392B 50%)' };
 
   return (
-    <div className={`h-dvh w-screen flex flex-col overflow-hidden select-none relative ${isDark ? '' : ''}`} style={bgStyle}>
+    <div
+      className="h-dvh w-screen flex flex-col overflow-hidden select-none relative"
+      style={{ ...bgStyle, paddingTop: 'env(safe-area-inset-top, 0px)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
       {/* ─── TOP BAR: Timer + Set counter ─── */}
       <div className="flex flex-col items-center pt-4 pb-1 relative z-10">
           {/* Timer capsule */}
@@ -157,6 +178,7 @@ export function GameScreen() {
               onClick={toggleTimer}
               className="text-gray-600 hover:text-gray-800 transition-colors w-8 h-8 flex items-center justify-center"
               title={timerRunning ? 'Pausar' : 'Iniciar'}
+              aria-label={timerRunning ? 'Pausar cronômetro' : 'Iniciar cronômetro'}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 {timerRunning ? (
@@ -178,6 +200,7 @@ export function GameScreen() {
               onClick={resetTimer}
               className="text-gray-500 hover:text-gray-700 transition-colors w-8 h-8 flex items-center justify-center"
               title="Reiniciar cronômetro"
+              aria-label="Reiniciar cronômetro"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 2v6h-6" />
@@ -209,6 +232,10 @@ export function GameScreen() {
           onClick={() => scoreSide(leftSide)}
           onTouchStart={e => handleTouchStart(e, leftSide)}
           onTouchEnd={handleTouchEnd}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); scoreSide(leftSide); } }}
+          aria-label={`Ponto para ${leftTeam.name || `Time ${leftTeam.id}`}`}
         >
           {/* Mascot emoji */}
           <div className="absolute bottom-4 left-4 text-4xl opacity-60 select-none pointer-events-none drop-shadow-lg">
@@ -250,6 +277,10 @@ export function GameScreen() {
           onClick={() => scoreSide(rightSide)}
           onTouchStart={e => handleTouchStart(e, rightSide)}
           onTouchEnd={handleTouchEnd}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); scoreSide(rightSide); } }}
+          aria-label={`Ponto para ${rightTeam.name || `Time ${rightTeam.id}`}`}
         >
           {/* Mascot emoji */}
           <div className="absolute bottom-4 right-4 text-4xl opacity-60 select-none pointer-events-none drop-shadow-lg">
@@ -289,9 +320,9 @@ export function GameScreen() {
           {menuExpanded && (
             <motion.div
               key="expanded"
-              initial={{ opacity: 0, scale: 0.9, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 10 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.9, y: 10 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+              exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.9, y: 10 }}
               className="bg-white/95 backdrop-blur rounded-2xl px-3 py-3 shadow-xl border border-white/30 mb-2"
             >
               <div className="grid grid-cols-3 gap-1.5">
@@ -311,6 +342,7 @@ export function GameScreen() {
           onClick={() => setMenuExpanded(p => !p)}
           className="bg-white/95 backdrop-blur rounded-full w-10 h-10 flex items-center justify-center shadow-lg border border-white/30 hover:bg-white transition-colors"
           title={menuExpanded ? 'Fechar menu' : 'Abrir menu'}
+          aria-label={menuExpanded ? 'Fechar menu de controle' : 'Abrir menu de controle'}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 transition-transform duration-200"
             style={{ transform: menuExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
@@ -328,7 +360,10 @@ export function GameScreen() {
       </div>
 
       {/* ─── BOTTOM BAR: Queue + End Match ─── */}
-      <div className={`${isDark ? 'bg-gray-900/80' : 'bg-black/10 backdrop-blur-sm'} px-4 py-2.5 flex items-center justify-between relative z-20`}>
+      <div
+        className={`${isDark ? 'bg-gray-900/80' : 'bg-black/10 backdrop-blur-sm'} px-4 py-2.5 flex items-center justify-between relative z-20`}
+        style={{ paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))', paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))' }}
+      >
           {/* Queue */}
           <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto">
             {queueTeams.length > 0 && (

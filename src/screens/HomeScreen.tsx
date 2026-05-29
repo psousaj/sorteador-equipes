@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import {
   Shuffle, Volume2, VolumeX,
   AlertTriangle, History,
@@ -104,12 +104,13 @@ export function HomeScreen() {
   const blockedPairs = useMemo(() => {
     const pairs: BlockedPair[] = [];
     const processed = new Set<string>();
+    const peopleMap = new Map(people.map(p => [p.id, p]));
     people.forEach(p => {
       p.blockedWith.forEach(bId => {
         const key = [p.id, bId].sort().join('::');
         if (processed.has(key)) return;
         processed.add(key);
-        const other = people.find(op => op.id === bId);
+        const other = peopleMap.get(bId);
         if (other) {
           pairs.push({ personId1: p.id, personId2: bId, personName1: p.name, personName2: other.name });
         }
@@ -142,14 +143,15 @@ export function HomeScreen() {
     dispatch({ type: 'TOGGLE_PERSON_TAG', payload: { id, tag } });
   };
 
-  const handleAddCustomTag = (id: string, tag: string) => {
+  const handleAddCustomTag = useCallback((id: string, tag: string) => {
     // Validate: 2-30 chars, alphanumeric + acentos + hífen + espaço
-    if (!tag || tag.length < 2 || tag.length > 30 || !/^[a-zA-ZÀ-ÿ0-9\-_\s]+$/.test(tag)) return;
+    const TAG_VALID_RE = /^[a-zA-ZÀ-ÿ0-9\-_\s]+$/;
+    if (!tag || tag.length < 2 || tag.length > 30 || !TAG_VALID_RE.test(tag)) return;
     // Check if already exists in user or template tags
     if (userTags.includes(tag) || templateTags.includes(tag)) return;
     setUserTags(prev => [...prev, tag]);
     dispatch({ type: 'ADD_TAG_TO_PERSON', payload: { id, tag } });
-  };
+  }, [userTags, templateTags]);
 
   const handleRemovePerson = (id: string, name: string) => {
     dispatch({ type: 'REMOVE_PERSON', payload: { id, name } });
@@ -239,6 +241,7 @@ export function HomeScreen() {
               onClick={() => dispatch({ type: 'TOGGLE_SOUND', payload: !soundEnabled })}
               className="p-2 rounded-xl hover:bg-white/80 transition-colors"
               title={soundEnabled ? 'Desativar som' : 'Ativar som'}
+              aria-label={soundEnabled ? 'Desativar som' : 'Ativar som'}
             >
               {soundEnabled ? <Volume2 size={20} className="text-gray-600" /> : <VolumeX size={20} className="text-gray-400" />}
             </button>
@@ -246,6 +249,7 @@ export function HomeScreen() {
               onClick={() => dispatch({ type: 'SET_SCREEN', payload: 'history' })}
               className="p-2 rounded-xl hover:bg-white/80 transition-colors"
               title="Histórico"
+              aria-label="Histórico de sorteios"
             >
               <History size={20} className="text-gray-600" />
             </button>
@@ -380,6 +384,7 @@ export function HomeScreen() {
             <button
               onClick={handleStartDraw}
               disabled={!isPeopleReady}
+              aria-label={isPeopleReady ? 'Realizar sorteio' : 'Adicione pessoas para sortear'}
               className={`
                 w-full py-4 rounded-2xl font-display text-xl flex items-center justify-center gap-3
                 transition-all duration-300 shadow-lg

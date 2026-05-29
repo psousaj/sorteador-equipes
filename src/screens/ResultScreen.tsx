@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Copy, Check, Shuffle, ArrowLeft, Share2, Play, X, Crown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
@@ -12,6 +12,12 @@ export function ResultScreen() {
   const [copied, setCopied] = useState(false);
   const [showGameModal, setShowGameModal] = useState(false);
   const [showTags, setShowTags] = useState(true);
+
+  // prefers-reduced-motion
+  const prefersReducedMotion = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }, []);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -43,6 +49,16 @@ export function ResultScreen() {
   }, [currentResult]);
 
   if (!currentResult) return null;
+
+  // Computed: build teams info with customizations
+  const teamsWithInfo = useMemo((): Team[] => {
+    if (!currentResult) return [];
+    return currentResult.teams.map(t => ({
+      ...t,
+      name: teamNames[t.id] || t.name || `Time ${t.id}`,
+      emoji: teamEmojis[t.id] || t.emoji || randomTeamEmoji(),
+    }));
+  }, [currentResult, teamNames, teamEmojis]);
 
   // Save customizations whenever they change
   const persistCustomizations = (names: Record<number, string>, emojis: Record<number, string>) => {
@@ -122,7 +138,7 @@ export function ResultScreen() {
   };
 
   const startGame = () => {
-    const teamsWithInfo = buildTeamsWithInfo();
+    const teamsWithInfoLocal = teamsWithInfo;
     const configToSave = { ...gameConfig };
 
     // If sets disabled, ensure related fields are off
@@ -136,7 +152,7 @@ export function ResultScreen() {
 
     dispatch({
       type: 'START_GAME',
-      payload: { config: configToSave, teams: teamsWithInfo },
+      payload: { config: configToSave, teams: teamsWithInfoLocal },
     });
     dispatch({ type: 'SET_SCREEN', payload: 'game' });
     setShowGameModal(false);
@@ -150,6 +166,7 @@ export function ResultScreen() {
           <button
             onClick={() => dispatch({ type: 'SET_SCREEN', payload: 'home' })}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+            aria-label="Voltar para tela inicial"
           >
             <ArrowLeft size={20} />
             <span className="text-sm font-medium">Voltar</span>
@@ -159,7 +176,7 @@ export function ResultScreen() {
         {/* Title */}
         <motion.div
           className="text-center mb-8"
-          initial={{ opacity: 0, y: -20 }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <h1 className="text-3xl font-display text-gray-800">
@@ -199,10 +216,11 @@ export function ResultScreen() {
                 <div className={`${tc.bg} text-white px-4 py-2 flex items-center gap-2`}>
                   {/* Emoji selector */}
                   <div className="relative">
-                    <button
-                      onClick={() => setEditEmojiForTeam(editEmojiForTeam === team.id ? null : team.id)}
-                      className="text-xl hover:scale-110 transition-transform cursor-pointer select-none"
-                    >
+                  <button
+                    onClick={() => setEditEmojiForTeam(editEmojiForTeam === team.id ? null : team.id)}
+                    className="text-xl hover:scale-110 transition-transform cursor-pointer select-none"
+                    aria-label={`Alterar emoji do time ${displayName}`}
+                  >
                       {displayEmoji}
                     </button>
                     <AnimatePresence>
@@ -350,6 +368,10 @@ export function ResultScreen() {
           {showGameModal && (
             <motion.div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+              style={{ overscrollBehavior: 'contain' }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Configurar partida"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -367,6 +389,7 @@ export function ResultScreen() {
                   <button
                     onClick={() => setShowGameModal(false)}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Fechar configuração"
                   >
                     <X size={20} />
                   </button>
