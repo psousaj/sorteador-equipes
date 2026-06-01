@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fredoka One", cursive, sans-serif;
+  --font-body: "Nunito", sans-serif;
+
+  --color-brand: #F54E00;
+  --color-brand-light: #FF7A3D;
+  --color-brand-dark: #CC3D00;
+
+  --color-team-1: #6C5CE7;
+  --color-team-2: #00B894;
+  --color-team-3: #FD79A8;
+  --color-team-4: #FDCB6E;
+  --color-team-5: #74B9FF;
+  --color-team-6: #E17055;
+  --color-team-7: #00CEC9;
+  --color-team-8: #A29BFE;
+
+  --animate-bounce-in: bounceIn 0.5s ease-out;
+  --animate-flip: flip 0.6s ease-in-out;
+  --animate-pop: pop 0.3s ease-out;
+  --animate-shake: shake 0.5s ease-in-out;
+  --animate-confetti: confetti 1s ease-out forwards;
+  --animate-slide-up: slideUp 0.4s ease-out;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes flip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes confetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-100px) rotate(720deg); opacity: 0; }
+}
+
+@keyframes slideUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* ─── Base ───────────────────────────────────────────── */
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Number input arrows hidden */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
