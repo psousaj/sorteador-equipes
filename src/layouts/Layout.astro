@@ -1,8 +1,8 @@
 ---
 import '../styles/global.css';
 
-const gtmId = import.meta.env.PUBLIC_GTM_ID || '';
-const siteUrl = 'https://meuracha.com.br';
+const gtmId = import.meta.env.PUBLIC_GTM_ID?.startsWith('GTM-') ? import.meta.env.PUBLIC_GTM_ID : '';
+const siteUrl = Astro.site?.origin || 'https://meuracha.com.br';
 ---
 
 <!doctype html>
@@ -10,7 +10,7 @@ const siteUrl = 'https://meuracha.com.br';
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content="Meu Racha - Sorteador de equipes online grátis 🎲 Monte times balanceados rapidamente. Suporta regras personalizadas, gênero, capitães e mais." />
     <meta name="keywords" content="sorteador de equipes, sorteio de times, formar times, distribuir jogadores, organizer times esportes, meu racha" />
