@@ -31,7 +31,7 @@ export function HistoryScreen() {
       lines.push(`*Time ${team.id}*`);
       team.members.forEach(m => {
         const isCaptain = team.captain?.id === m.id;
-        lines.push(`${isCaptain ? '👑 ' : ''}${m.name}`);
+        lines.push(`${isCaptain ? '[C] ' : ''}${m.name}`);
       });
       lines.push('');
     });
