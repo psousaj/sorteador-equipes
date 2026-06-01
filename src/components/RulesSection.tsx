@@ -142,7 +142,7 @@ export function RulesSection({
             <select
               value={newRuleTag}
               onChange={(e) => setNewRuleTag(e.target.value)}
-              className="w-full text-sm px-3 py-1.5 rounded-lg border focus:outline-none focus:border-brand"
+              className="w-full text-sm px-3 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-brand"
             >
               <option value="">Selecione uma tag...</option>
               {availableRuleTags.map(t => (
@@ -153,7 +153,7 @@ export function RulesSection({
             <select
               value={newRuleGender}
               onChange={(e) => setNewRuleGender(e.target.value)}
-              className="w-full text-sm px-3 py-1.5 rounded-lg border focus:outline-none focus:border-brand"
+              className="w-full text-sm px-3 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-brand"
             >
               {GENDER_OPTIONS.map(g => (
                 <option key={g.value} value={g.value}>{g.label}</option>
@@ -165,7 +165,7 @@ export function RulesSection({
             <select
               value={newRuleType}
               onChange={(e) => setNewRuleType(e.target.value as any)}
-              className="flex-1 text-sm px-2 py-1.5 rounded-lg border focus:outline-none focus:border-brand"
+              className="flex-1 text-sm px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-brand"
             >
               <option value="min">Mínimo</option>
               <option value="max">Máximo</option>
@@ -176,7 +176,7 @@ export function RulesSection({
               min={1}
               value={newRuleValue}
               onChange={(e) => setNewRuleValue(Number(e.target.value))}
-              className="w-16 text-center text-sm px-2 py-1.5 rounded-lg border focus:outline-none focus:border-brand"
+              className="w-16 text-center text-sm px-2 py-1.5 rounded-lg border border-gray-200 focus:outline-none focus:border-brand"
             />
             <span className="text-xs text-gray-500 self-center">por time</span>
           </div>

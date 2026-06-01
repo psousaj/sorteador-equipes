@@ -62,7 +62,7 @@ export function PeopleInput({
           }}
           onKeyDown={onKeyDown}
           placeholder="João, Maria, Pedro, Ana...&#10;(um por linha ou separados por vírgula)"
-          className={`w-full min-h-[80px] px-3 py-2 text-sm border rounded-xl resize-none focus:outline-none focus-visible:outline-none transition-all duration-300 overflow-hidden ${
+          className={`w-full min-h-[80px] px-3 py-2 text-sm border border-gray-200 rounded-xl resize-none focus:outline-none focus-visible:outline-none transition-all duration-300 overflow-hidden ${
             flash
               ? 'border-green-400 ring-2 ring-green-200 bg-green-50'
               : 'focus:ring-2 focus:ring-brand/30 focus:border-brand'
