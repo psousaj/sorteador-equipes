@@ -124,7 +124,7 @@ export function PersonChip({
               + Tag
             </button>
             {tagMenuOpen && (
-              <div className="absolute top-full left-0 mt-1 z-20 bg-white border rounded-xl shadow-xl p-2 min-w-[140px]">
+              <div className="absolute top-full left-0 mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-xl p-2 min-w-[140px]">
               {availableTags
                 .filter(t => !person.tags.includes(t))
                 .map(tag => (
@@ -155,7 +155,7 @@ export function PersonChip({
         <input
           type="text"
           placeholder="Tag personalizada..."
-          className="w-3/5 text-xs px-2 py-1 border rounded-lg focus:outline-none focus:border-brand"
+          className="w-3/5 text-xs px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:border-brand"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               const value = (e.target as HTMLInputElement).value.trim().toLowerCase();

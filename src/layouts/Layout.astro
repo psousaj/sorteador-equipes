@@ -1,0 +1,82 @@
+---
+import '../styles/global.css';
+
+const gtmId = import.meta.env.PUBLIC_GTM_ID?.startsWith('GTM-') ? import.meta.env.PUBLIC_GTM_ID : '';
+const siteUrl = Astro.site?.origin || 'https://meuracha.com.br';
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content="Meu Racha - Sorteador de equipes online grátis 🎲 Monte times balanceados rapidamente. Suporta regras personalizadas, gênero, capitães e mais." />
+    <meta name="keywords" content="sorteador de equipes, sorteio de times, formar times, distribuir jogadores, organizer times esportes, meu racha" />
+    <meta name="theme-color" content="#F54E00" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Meu Racha 🎲 - Sorteador de Equipes" />
+    <meta property="og:description" content="Monte times balanceados em segundos. Suporta regras, gênero, capitães e modo partida." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:image" content={`${siteUrl}/favicon.svg`} />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Meu Racha 🎲 - Sorteador de Equipes" />
+    <meta name="twitter:description" content="Monte times balanceados em segundos. Grátis e sem cadastro." />
+
+    <!-- Preload fonts + preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Meu Racha - Sorteador de Equipes",
+      "description": "Ferramenta online gratuita para sortear e balancear times esportivos. Suporta regras personalizadas, distribuição por gênero, capitães, e modo partida com placar.",
+      "url": siteUrl,
+      "applicationCategory": "SportsApplication",
+      "operatingSystem": "Web",
+      "browserRequirements": "Requires JavaScript",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL"
+      }
+    })}></script>
+
+    <!-- Google Tag Manager -->
+    {gtmId && (
+      <script set:html={`
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','${gtmId}');
+      `} />
+    )}
+    <!-- End Google Tag Manager -->
+
+    <title>🎲 Meu Racha — Sorteador de Equipes</title>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    {gtmId && (
+      <noscript>
+        <iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+          height="0" width="0" style="display:none;visibility:hidden"></iframe>
+      </noscript>
+    )}
+    <!-- End Google Tag Manager (noscript) -->
+
+    <slot />
+  </body>
+</html>

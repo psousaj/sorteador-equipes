@@ -90,7 +90,7 @@ export function ResultScreen() {
         const isCaptain = team.captain?.id === m.id;
         const tags = showTags ? m.tags.filter(t => t !== 'masculino' && t !== 'feminino').join(', ') : '';
         const tagStr = tags ? ` (${tags})` : '';
-        lines.push(`${isCaptain ? '👑 ' : ''}${m.name}${tagStr}`);
+        lines.push(`${isCaptain ? '[C] ' : ''}${m.name}${tagStr}`);
       });
       lines.push('');
     });
