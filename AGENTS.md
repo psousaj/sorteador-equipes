@@ -1,4 +1,4 @@
-# MeuRacha 🏟️ — Contexto do Projeto
+# Meu Racha 🏟️ — Contexto do Projeto
 
 Sorteio de equipes para rachas, peladas e eventos esportivos.
 
@@ -23,26 +23,33 @@ pnpm preview    # astro preview
 
 - **Node:** 22+
 - **pnpm:** 11.x
-- **GitHub:** psousaj/sorteador-equipes
+- **GitHub:** psousaj/meu-racha
 
 ## 🚨 Regra Sagrada: NUNCA push direto na main
 
 NUNCA dar push direto na main. Sempre criar PR → revisar → mergear. Push direto na main só com ordem EXPLÍCITA do usuário.
 
-## 🔄 Pós-PR Merge: sempre dar pull --rebase na main
+## 🔄 Pós-PR Merge: sempre rodar `git sync-branch`
 
-Após mergear QUALQUER PR, atualizar a main local:
+Após mergear QUALQUER PR na main, rodar:
 ```
-git switch main && git pull --rebase
+git sync-branch
 ```
 
-Projetos com branch `development` (Huni, Nexo AI): usar `git sync-branch` (alias global).
+O alias global (`~/.gitconfig`) executa:
+1. `git switch main`
+2. `git pull --rebase`
+3. `git switch development`
+4. `git rebase main`
+5. `git push --force-with-lease origin development`
+
+Isso mantém a `development` sempre em cima da main. Se pular, commits divergem e o próximo PR tem conflitos.
 
 ## Agent skills
 
 ### Issue tracker
 
-Issues are tracked in GitHub Issues (psousaj/sorteador-equipes). Use `mcp_github_*` tools or `gh` CLI for all operations. See `docs/agents/issue-tracker.md`.
+Issues are tracked in GitHub Issues (psousaj/meu-racha). Use `mcp_github_*` tools or `gh` CLI for all operations. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
