@@ -25,6 +25,19 @@ pnpm preview    # astro preview
 - **pnpm:** 11.x
 - **GitHub:** psousaj/sorteador-equipes
 
+## 🚨 Regra Sagrada: NUNCA push direto na main
+
+NUNCA dar push direto na main. Sempre criar PR → revisar → mergear. Push direto na main só com ordem EXPLÍCITA do usuário.
+
+## 🔄 Pós-PR Merge: sempre dar pull --rebase na main
+
+Após mergear QUALQUER PR, atualizar a main local:
+```
+git switch main && git pull --rebase
+```
+
+Projetos com branch `development` (Huni, Nexo AI): usar `git sync-branch` (alias global).
+
 ## Agent skills
 
 ### Issue tracker
