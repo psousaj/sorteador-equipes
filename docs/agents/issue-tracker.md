@@ -1,6 +1,6 @@
 # Issue tracker: GitHub
 
-Issues and PRDs for this repo live as GitHub issues in **psousaj/sorteador-equipes**. Use the `gh` CLI or GitHub MCP tools for all operations.
+Issues and PRDs for this repo live as GitHub issues in **psousaj/meu-racha**. Use the `gh` CLI or GitHub MCP tools for all operations.
 
 ## Conventions
 
