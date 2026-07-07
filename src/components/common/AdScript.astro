@@ -1,0 +1,11 @@
+---
+const adsenseClient = import.meta.env.PUBLIC_ADSENSE_CLIENT || '';
+---
+
+{adsenseClient && (
+  <script
+    async
+    src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+    crossorigin="anonymous"
+  />
+)}
