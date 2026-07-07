@@ -1,0 +1,71 @@
+---
+import ShowIf from './ShowIf.astro';
+import {
+  SERVICE_AD_STORAGE,
+  SERVICE_AD_USER_DATA,
+  SERVICE_ANALYTICS_STORAGE,
+  SERVICE_FUNCTIONALITY_STORAGE,
+  SERVICE_AD_PERSONALIZATION,
+  SERVICE_PERSONALIZATION_STORAGE,
+  SERVICE_SECURITY_STORAGE,
+} from '../cookie-consent/consts';
+
+type Props = {
+  measurementId?: string;
+};
+const { measurementId } = Astro.props;
+---
+
+<ShowIf condition={!!measurementId && import.meta.env.PROD}>
+  <!-- Google Tag Manager -->
+  <script is:inline define:vars={{ measurementId }}>
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      // eslint-disable-next-line no-var
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', measurementId);
+  </script>
+  <!-- End Google Tag Manager -->
+
+  <script
+    is:inline
+    define:vars={{
+      measurementId,
+      SERVICE_AD_STORAGE,
+      SERVICE_AD_USER_DATA,
+      SERVICE_AD_PERSONALIZATION,
+      SERVICE_ANALYTICS_STORAGE,
+      SERVICE_FUNCTIONALITY_STORAGE,
+      SERVICE_PERSONALIZATION_STORAGE,
+      SERVICE_SECURITY_STORAGE,
+    }}
+    defer
+  >
+    window.dataLayer = window.dataLayer || [];
+
+    window.gtag = function () {
+      // eslint-disable-next-line prefer-rest-params
+      window.dataLayer.push(arguments);
+    };
+
+    window.gtag('js', new Date());
+
+    window.gtag('consent', 'default', {
+      [SERVICE_AD_STORAGE]: 'denied',
+      [SERVICE_AD_USER_DATA]: 'denied',
+      [SERVICE_AD_PERSONALIZATION]: 'denied',
+      [SERVICE_ANALYTICS_STORAGE]: 'denied',
+      [SERVICE_FUNCTIONALITY_STORAGE]: 'denied',
+      [SERVICE_PERSONALIZATION_STORAGE]: 'denied',
+      [SERVICE_SECURITY_STORAGE]: 'granted',
+    });
+
+    window.gtag('config', measurementId);
+  </script>
+</ShowIf>

@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import { TeamCard } from '../components/TeamCard';
 import { getHistory, clearHistory, removeFromHistory } from '../lib/storage';
 import type { DrawResult } from '../types';
+import { AdBanner } from '../components/AdBanner';
 
 export function HistoryScreen() {
   const { state, dispatch } = useApp();
@@ -98,6 +99,9 @@ export function HistoryScreen() {
             Histórico
           </h1>
         </motion.div>
+
+        {/* Ad Banner */}
+        <AdBanner slot="1234567892" className="mb-6" />
 
         {/* Empty state */}
         {history.length === 0 && (

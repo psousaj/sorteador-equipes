@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import type { GameConfig, Team } from '../types';
 import { defaultGameConfig, randomTeamEmoji, TEAM_EMOJIS, TEAM_COLORS } from '../types';
 import { getGameConfig, saveGameConfig, saveTeamCustomizations, getTeamCustomizations } from '../lib/storage';
+import { AdBanner } from '../components/AdBanner';
 
 export function ResultScreen() {
   const { state, dispatch, startDraw } = useApp();
@@ -276,6 +277,9 @@ export function ResultScreen() {
             );
           })}
         </motion.div>
+
+        {/* Ad Banner */}
+        <AdBanner slot="1234567891" className="mb-8" />
 
         {/* Action buttons - two rows */}
         <motion.div

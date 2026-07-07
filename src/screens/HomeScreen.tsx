@@ -8,6 +8,7 @@ import { DEFAULT_TAGS } from '../types';
 import type { TeamRule, Person, BlockedPair } from '../types';
 import { playPopSound, playClickSound } from '../lib/sounds';
 import { saveCustomTags, getCustomTags } from '../lib/storage';
+import { AdBanner } from '../components/AdBanner';
 import { SPORTS, CAPTAIN_TAG } from '../lib/sports';
 import { PeopleInput } from '../components/PeopleInput';
 import { PeopleList } from '../components/PeopleList';
@@ -375,6 +376,9 @@ export function HomeScreen() {
                 <div className="text-xs text-red-700 whitespace-pre-wrap">{drawError}</div>
               </div>
             )}
+
+            {/* Ad Banner */}
+            <AdBanner slot="1234567890" />
 
             {/* Sortear button */}
             <button
