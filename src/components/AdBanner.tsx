@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useApp } from '../context/AppContext';
 
 const COOKIE_NAME = 'meuracha_cc_cookie';
+const AD_CLIENT = typeof import.meta !== 'undefined' ? import.meta.env.PUBLIC_ADSENSE_CLIENT || '' : '';
 
 function hasAdConsent(): boolean {
   if (typeof document === 'undefined') return false;
@@ -57,14 +57,14 @@ export function AdBanner({ className = '', slot, format = 'auto' }: Props) {
     return () => clearTimeout(timer);
   }, [consented, mounted, slot]);
 
-  if (!mounted || !consented) return null;
+  if (!mounted || !consented || !AD_CLIENT) return null;
 
   return (
     <div className={`flex justify-center overflow-hidden ${className}`}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client="ca-pub-0000000000000000" // ← substituir pelo ID real
+        data-ad-client={AD_CLIENT}
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
