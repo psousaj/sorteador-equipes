@@ -1,6 +1,7 @@
 import { Home, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useApp } from '../context/AppContext';
+import { AdBanner } from '../components/AdBanner';
 
 export function GameOverScreen() {
   const { state, dispatch } = useApp();
@@ -120,6 +121,9 @@ export function GameOverScreen() {
             ))
           )}
         </motion.div>
+
+        {/* Ad Banner */}
+        <AdBanner slot="1234567893" className="mb-6" />
 
         {/* Actions */}
         <motion.div

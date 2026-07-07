@@ -33,3 +33,4 @@ pnpm-debug.log*
 
 # Local
 *.local
+package-lock.json
