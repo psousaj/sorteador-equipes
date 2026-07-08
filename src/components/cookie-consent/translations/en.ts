@@ -12,13 +12,13 @@ const config = {
     description:
       'Meu Racha uses cookies to improve your browsing experience. By continuing to browse, you agree to the use of cookies.',
     acceptAllBtn: 'Accept all',
-    acceptNecessaryBtn: 'Reject all',
+    acceptNecessaryBtn: 'Only necessary',
     showPreferencesBtn: 'Manage preferences',
   },
   preferencesModal: {
     title: 'Cookie Preferences',
     acceptAllBtn: 'Accept all',
-    acceptNecessaryBtn: 'Reject all',
+    acceptNecessaryBtn: 'Only necessary',
     savePreferencesBtn: 'Save preferences',
     closeIconLabel: 'Close',
     serviceCounterLabel: 'Service|Services',

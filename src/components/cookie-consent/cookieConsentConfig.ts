@@ -66,7 +66,7 @@ function updateGtagConsent() {
 
 export const config: CookieConsentConfig = {
   root: '#cc-container',
-  disablePageInteraction: true,
+  disablePageInteraction: false,
   cookie: {
     name: 'meuracha_cc_cookie',
   },
