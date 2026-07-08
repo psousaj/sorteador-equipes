@@ -12,13 +12,13 @@ const config = {
     description:
       'O Meu Racha utiliza cookies para melhorar sua experiência no site. Se você prosseguir na navegação, entendemos que está de acordo com o uso de cookies.',
     acceptAllBtn: 'Aceitar todos',
-    acceptNecessaryBtn: 'Rejeitar todos',
+    acceptNecessaryBtn: 'Apenas necessários',
     showPreferencesBtn: 'Gerenciar preferências',
   },
   preferencesModal: {
     title: 'Preferências de Cookies',
     acceptAllBtn: 'Aceitar todos',
-    acceptNecessaryBtn: 'Rejeitar todos',
+    acceptNecessaryBtn: 'Apenas necessários',
     savePreferencesBtn: 'Salvar preferências',
     closeIconLabel: 'Fechar',
     serviceCounterLabel: 'Serviço|Serviços',
