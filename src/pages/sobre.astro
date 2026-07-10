@@ -1,0 +1,66 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <main class="min-h-dvh bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <a href="/" class="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-dark transition-colors mb-8">
+        ← Voltar
+      </a>
+
+      <div class="bg-white rounded-3xl border border-gray-200 p-8 md:p-12 shadow-sm">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand to-purple-600 flex items-center justify-center shadow-lg">
+            <span class="text-2xl">🎲</span>
+          </div>
+          <div>
+            <h1 class="text-3xl font-display text-gray-800">Sobre o Meu Racha</h1>
+            <p class="text-sm text-gray-500">Monte times balanceados em segundos</p>
+          </div>
+        </div>
+
+        <div class="prose prose-gray max-w-none">
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">O que é?</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O <strong>Meu Racha</strong> é uma ferramenta online gratuita que ajuda você a montar times
+            balanceados para seus rachas, peladas e eventos esportivos. Chega de perder tempo
+            tentando dividir os jogadores manualmente — com poucos cliques você tem times justos e prontos para jogar.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">Como funciona?</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Basta adicionar os nomes dos participantes, configurar o tamanho dos times,
+            e o Meu Racha faz o sorteio distribuindo os jogadores de forma equilibrada.
+            Você pode personalizar regras como separar por gênero, definir capitães,
+            e até impedir que pessoas específicas fiquem no mesmo time.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">Funcionalidades</h2>
+          <ul class="list-disc pl-6 text-gray-600 space-y-2">
+            <li><strong>Sorteio inteligente</strong> — distribuição balanceada dos jogadores</li>
+            <li><strong>Modo partida</strong> — jogue com cronômetro, sets e placar integrado</li>
+            <li><strong>Regras personalizadas</strong> — gênero, capitães, pares bloqueados e tags</li>
+            <li><strong>Templates de esporte</strong> — configuração rápida para futebol, vôlei, basquete e mais</li>
+            <li><strong>Histórico</strong> — resultados salvos no seu navegador</li>
+            <li><strong>100% gratuito</strong> — sem cadastro, sem instalação</li>
+          </ul>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">Para quem é?</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Ideal para organizadores de rachas de futebol, vôlei, basquete, handebol e qualquer
+            esporte em equipe. Também útil para professores de educação física, técnicos esportivos,
+            e grupos de amigos que querem times justos sem discussão.
+          </p>
+        </div>
+      </div>
+
+      <footer class="text-center mt-8 pb-8">
+        <p class="text-xs text-gray-400">
+          © 2026 Meu Racha — <a href="/sobre" class="hover:text-brand transition-colors">Sobre</a>
+          · <a href="/fale-conosco" class="hover:text-brand transition-colors">Fale Conosco</a>
+        </p>
+      </footer>
+    </div>
+  </main>
+</Layout>
