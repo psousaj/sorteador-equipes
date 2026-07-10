@@ -68,14 +68,18 @@ const siteUrl = Astro.site?.origin || 'https://meuracha.com.br';
     <title>🎲 Meu Racha — Sorteador de Equipes</title>
   </head>
   <body>
-    <slot />
-    <Cookie />
-    <footer class="text-center py-6 px-4 text-xs text-gray-400 border-t border-gray-100 bg-white/50">
-      <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-        <span>© 2026 Meu Racha</span>
-        <a href="/sobre" class="hover:text-brand transition-colors">Sobre</a>
-        <a href="/fale-conosco" class="hover:text-brand transition-colors">Fale Conosco</a>
+    <div class="flex flex-col min-h-dvh">
+      <div class="flex-1">
+        <slot />
       </div>
-    </footer>
+      <footer class="text-center py-4 px-4 text-xs text-gray-400 border-t border-gray-100 bg-white/50">
+        <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          <span>© 2026 Meu Racha</span>
+          <a href="/sobre" class="hover:text-brand transition-colors">Sobre</a>
+          <a href="/fale-conosco" class="hover:text-brand transition-colors">Fale Conosco</a>
+        </div>
+      </footer>
+    </div>
+    <Cookie />
   </body>
 </html>
