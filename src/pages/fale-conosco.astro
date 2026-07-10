@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <main class="min-h-dvh bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div class="max-w-2xl mx-auto px-4 py-12">
+      <a href="/" class="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-dark transition-colors mb-8">
+        ← Voltar
+      </a>
+
+      <div class="bg-white rounded-3xl border border-gray-200 p-8 md:p-12 shadow-sm">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand to-purple-600 flex items-center justify-center shadow-lg">
+            <span class="text-2xl">✉️</span>
+          </div>
+          <div>
+            <h1 class="text-3xl font-display text-gray-800">Fale Conosco</h1>
+            <p class="text-sm text-gray-500">Tem alguma dúvida ou sugestão?</p>
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <p class="text-gray-600 leading-relaxed">
+            Adoramos receber feedback! Se você tiver dúvidas, sugestões de melhorias
+            ou encontrar algum problema, entre em contato conosco.
+          </p>
+
+          <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6">
+            <h2 class="text-lg font-display text-gray-800 mb-3">📧 E-mail</h2>
+            <p class="text-gray-600">
+              Envie um e-mail para <br />
+              <a href="mailto:contato@meuracha.com.br" class="text-brand hover:text-brand-dark font-semibold transition-colors">
+                contato@meuracha.com.br
+              </a>
+            </p>
+          </div>
+
+          <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6">
+            <h2 class="text-lg font-display text-gray-800 mb-3">🐛 Reportar um problema</h2>
+            <p class="text-gray-600 leading-relaxed">
+              Encontrou um bug ou algo não funcionou como esperado? Nos avise pelo e-mail acima
+              com o máximo de detalhes possível (navegador, dispositivo, o que estava fazendo).
+              Respondemos o mais rápido possível!
+            </p>
+          </div>
+
+          <div class="bg-gray-50 rounded-2xl border border-gray-200 p-6">
+            <h2 class="text-lg font-display text-gray-800 mb-3">💡 Sugestões</h2>
+            <p class="text-gray-600 leading-relaxed">
+              Tem uma ideia para melhorar o Meu Racha? Adoramos ouvir sugestões!
+              Mande sua ideia por e-mail e quem sabe ela aparece na próxima atualização.
+            </p>
+          </div>
+
+          <p class="text-xs text-gray-400 text-center pt-4">
+            Respondemos todos os e-mails em até 48 horas úteis.
+          </p>
+        </div>
+      </div>
+
+      <footer class="text-center mt-8 pb-8">
+        <p class="text-xs text-gray-400">
+          © 2026 Meu Racha — <a href="/sobre" class="hover:text-brand transition-colors">Sobre</a>
+          · <a href="/fale-conosco" class="hover:text-brand transition-colors">Fale Conosco</a>
+        </p>
+      </footer>
+    </div>
+  </main>
+</Layout>
