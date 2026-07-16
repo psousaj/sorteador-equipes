@@ -1,0 +1,94 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <main class="min-h-dvh bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <a href="/" class="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-dark transition-colors mb-8">
+        ← Voltar
+      </a>
+
+      <div class="bg-white rounded-3xl border border-gray-200 p-8 md:p-12 shadow-sm">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand to-purple-600 flex items-center justify-center shadow-lg">
+            <span class="text-2xl">🔒</span>
+          </div>
+          <div>
+            <h1 class="text-3xl font-display text-gray-800">Política de Privacidade</h1>
+            <p class="text-sm text-gray-500">Atualizada em julho de 2026</p>
+          </div>
+        </div>
+
+        <div class="prose prose-gray max-w-none">
+          <p class="text-gray-600 leading-relaxed">
+            O <strong>Meu Racha</strong> respeita a sua privacidade. Esta política explica como
+            coletamos, usamos e protegemos suas informações ao utilizar nossa ferramenta.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">1. Dados que coletamos</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha é uma ferramenta 100% online que <strong>não exige cadastro ou login</strong>.
+            Todo o funcionamento do sorteio e das partidas acontece diretamente no seu navegador.
+          </p>
+          <p class="text-gray-600 leading-relaxed mt-2">
+            Os únicos dados que armazenamos localmente no seu navegador (localStorage) são:
+          </p>
+          <ul class="list-disc pl-6 text-gray-600 space-y-1">
+            <li>Nomes dos participantes adicionados</li>
+            <li>Configurações de times e regras</li>
+            <li>Histórico de sorteios realizados</li>
+            <li>Configurações de jogo (modo partida)</li>
+            <li>Preferência de consentimento de cookies</li>
+          </ul>
+          <p class="text-gray-600 leading-relaxed mt-2">
+            <strong>Nenhum dado é enviado para nossos servidores.</strong> Tudo fica no seu dispositivo.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">2. Cookies</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Utilizamos cookies estritamente necessários para o funcionamento básico do site.
+            O cookie <code>meuracha_cc_cookie</code> armazena sua preferência de consentimento.
+          </p>
+          <p class="text-gray-600 leading-relaxed mt-2">
+            Também utilizamos cookies do Google AdSense para exibir anúncios personalizados,
+            caso você tenha consentido. O Google pode utilizar cookies para veicular anúncios
+            com base nas visitas anteriores dos usuários ao seu site ou a outros sites.
+          </p>
+          <p class="text-gray-600 leading-relaxed mt-2">
+            Você pode gerenciar suas preferências de cookies a qualquer momento através do
+            banner de consentimento disponível no site.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">3. Anúncios</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha utiliza o <strong>Google AdSense</strong> para exibir anúncios. O Google
+            pode coletar dados de navegação para personalizar os anúncios exibidos, de acordo com
+            a <a href="https://policies.google.com/privacy" class="text-brand hover:text-brand-dark transition-colors" target="_blank" rel="noopener noreferrer">Política de Privacidade do Google</a>.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">4. Google AdSense</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Como terceiro fornecedor, o Google utiliza cookies para exibir anúncios no Meu Racha.
+            Você pode desativar a publicidade personalizada no
+            <a href="https://adssettings.google.com" class="text-brand hover:text-brand-dark transition-colors" target="_blank" rel="noopener noreferrer"> Gerenciador de Preferências de Anúncios</a> do Google.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">5. Links externos</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha pode conter links para sites externos. Não nos responsabilizamos pelas
+            práticas de privacidade desses sites.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">6. Contato</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Em caso de dúvidas sobre esta política, entre em contato pelo e-mail
+            <a href="mailto:contato@meuracha.com.br" class="text-brand hover:text-brand-dark font-semibold transition-colors"> contato@meuracha.com.br</a>.
+          </p>
+        </div>
+      </div>
+
+      <div class="h-4"></div>
+    </div>
+  </main>
+</Layout>

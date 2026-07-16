@@ -4,7 +4,106 @@ import App from '../App';
 ---
 
 <Layout>
-  <div id="cc-container">
-    <App client:load />
+  <div class="max-w-5xl mx-auto px-4">
+    <!-- Hero section -->
+    <div class="text-center pt-8 pb-6">
+      <h1 class="text-4xl md:text-5xl font-display text-gray-800 mb-4 leading-tight">
+        Monte times balanceados em segundos 🎲
+      </h1>
+      <p class="text-lg text-gray-500 max-w-2xl mx-auto">
+        Chega de perder tempo tentando dividir os jogadores manualmente. 
+        Com o Meu Racha, você forma times justos e equilibrados com apenas um clique.
+      </p>
+    </div>
+
+    <!-- App -->
+    <div id="cc-container">
+      <App client:load />
+    </div>
+
+    <!-- Como funciona -->
+    <section class="mt-16 mb-16">
+      <h2 class="text-2xl font-display text-gray-800 text-center mb-10">Como funciona</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-sm">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-orange-400 flex items-center justify-center mx-auto mb-4 shadow-md">
+            <span class="text-xl">👥</span>
+          </div>
+          <h3 class="text-lg font-display text-gray-800 mb-2">1. Adicione os participantes</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">
+            Digite os nomes da galera — um por linha ou separados por vírgula. 
+            Pode colar uma lista inteira de uma vez.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-sm">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-orange-400 flex items-center justify-center mx-auto mb-4 shadow-md">
+            <span class="text-xl">⚙️</span>
+          </div>
+          <h3 class="text-lg font-display text-gray-800 mb-2">2. Configure as regras</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">
+            Escolha o tamanho dos times, defina regras de distribuição, 
+            bloqueie pares ou ative capitães automáticos.
+          </p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-sm">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand to-orange-400 flex items-center justify-center mx-auto mb-4 shadow-md">
+            <span class="text-xl">🎲</span>
+          </div>
+          <h3 class="text-lg font-display text-gray-800 mb-2">3. SORTEAR!</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">
+            Clique em SORTEAR! e veja a mágica. Times formados, 
+            equilibrados e prontos pra jogar. Sem discussão, sem favoritismo.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Funcionalidades -->
+    <section class="mb-16">
+      <h2 class="text-2xl font-display text-gray-800 text-center mb-10">Funcionalidades</h2>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="flex items-start gap-4 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <span class="text-2xl shrink-0 mt-0.5">🎯</span>
+          <div>
+            <h3 class="font-display text-gray-800 font-semibold">Sorteio inteligente</h3>
+            <p class="text-sm text-gray-500">Distribuição balanceada respeitando regras, níveis e posições</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <span class="text-2xl shrink-0 mt-0.5">🏆</span>
+          <div>
+            <h3 class="font-display text-gray-800 font-semibold">Modo Partida</h3>
+            <p class="text-sm text-gray-500">Jogue com cronômetro, sets, placar e rodízio integrados</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <span class="text-2xl shrink-0 mt-0.5">🚫</span>
+          <div>
+            <h3 class="font-display text-gray-800 font-semibold">Regras personalizadas</h3>
+            <p class="text-sm text-gray-500">Gênero, níveis, capitães, pares bloqueados e tags</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4 bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+          <span class="text-2xl shrink-0 mt-0.5">⚡</span>
+          <div>
+            <h3 class="font-display text-gray-800 font-semibold">Templates rápidos</h3>
+            <p class="text-sm text-gray-500">Configuração pronta pra futebol, vôlei, basquete e tênis de mesa</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Para quem é -->
+    <section class="bg-gradient-to-br from-orange-50 to-purple-50 rounded-3xl border border-orange-200 p-8 md:p-10 mb-16 text-center">
+      <h2 class="text-2xl font-display text-gray-800 mb-4">Para quem é o Meu Racha?</h2>
+      <p class="text-gray-600 max-w-2xl mx-auto leading-relaxed">
+        Ideal para organizadores de rachas de futebol, vôlei, basquete e qualquer esporte em equipe. 
+        Também útil para <strong>professores de educação física</strong>, <strong>técnicos esportivos</strong>, 
+        e grupos de amigos que querem times justos sem discussão. 
+        <strong>100% gratuito</strong>, sem cadastro, sem instalação.
+      </p>
+    </section>
   </div>
 </Layout>

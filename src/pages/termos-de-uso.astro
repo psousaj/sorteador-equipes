@@ -1,0 +1,99 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <main class="min-h-dvh bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <a href="/" class="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-dark transition-colors mb-8">
+        ← Voltar
+      </a>
+
+      <div class="bg-white rounded-3xl border border-gray-200 p-8 md:p-12 shadow-sm">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand to-purple-600 flex items-center justify-center shadow-lg">
+            <span class="text-2xl">📜</span>
+          </div>
+          <div>
+            <h1 class="text-3xl font-display text-gray-800">Termos de Uso</h1>
+            <p class="text-sm text-gray-500">Atualizados em julho de 2026</p>
+          </div>
+        </div>
+
+        <div class="prose prose-gray max-w-none">
+          <p class="text-gray-600 leading-relaxed">
+            Ao utilizar o <strong>Meu Racha</strong>, você concorda com os termos descritos abaixo.
+            Se não concordar com algum destes termos, recomendamos que não utilize a ferramenta.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">1. Sobre o serviço</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha é uma ferramenta online gratuita para sorteio e balanceamento de equipes
+            esportivas. O serviço é fornecido "como está", sem garantias de disponibilidade
+            ininterrupta ou livre de erros.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">2. Uso aceitável</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Você concorda em utilizar o Meu Racha apenas para fins legais e de acordo com estes termos.
+            É proibido:
+          </p>
+          <ul class="list-disc pl-6 text-gray-600 space-y-1">
+            <li>Utilizar a ferramenta para qualquer fim ilegal ou não autorizado</li>
+            <li>Tentar burlar, modificar ou interferir no funcionamento do sistema de sorteio</li>
+            <li>Utilizar bots, crawlers ou qualquer meio automatizado para acessar o serviço</li>
+            <li>Inserir conteúdo ofensivo, discriminatório ou ilegal nos campos da ferramenta</li>
+          </ul>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">3. Privacidade</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha não coleta dados pessoais em servidores. Todas as informações inseridas
+            (nomes dos participantes, configurações, histórico) são armazenadas exclusivamente
+            no seu navegador (localStorage). Consulte nossa
+            <a href="/privacidade" class="text-brand hover:text-brand-dark font-semibold transition-colors"> Política de Privacidade</a>
+            para mais detalhes.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">4. Anúncios</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha exibe anúncios do Google AdSense para manter o serviço gratuito.
+            O Google pode utilizar cookies para personalizar anúncios conforme descrito em nossa
+            Política de Privacidade.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">5. Limitação de responsabilidade</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha é uma ferramenta de sorteio e não se responsabiliza por:
+          </p>
+          <ul class="list-disc pl-6 text-gray-600 space-y-1">
+            <li>Decisões tomadas com base nos resultados do sorteio</li>
+            <li>Lesões ou acidentes ocorridos durante atividades esportivas</li>
+            <li>Perda de dados armazenados no navegador (recomendamos não utilizar em modo anônimo)</li>
+            <li>Disponibilidade do serviço em momentos de manutenção ou instabilidade</li>
+          </ul>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">6. Idade mínima</h2>
+          <p class="text-gray-600 leading-relaxed">
+            O Meu Racha pode ser utilizado por menores de idade, desde que com supervisão de um
+            responsável legal. Não há coleta de dados pessoais que exija verificação de idade.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">7. Modificações nos termos</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Podemos atualizar estes termos a qualquer momento. Recomendamos revisar esta página
+            periodicamente. O uso continuado do serviço após alterações constitui aceitação dos
+            novos termos.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">8. Contato</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Para dúvidas sobre estes termos, entre em contato:
+            <a href="mailto:contato@meuracha.com.br" class="text-brand hover:text-brand-dark font-semibold transition-colors"> contato@meuracha.com.br</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="h-4"></div>
+    </div>
+  </main>
+</Layout>
