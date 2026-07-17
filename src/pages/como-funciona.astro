@@ -1,0 +1,122 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+  <main class="min-h-dvh bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div class="max-w-3xl mx-auto px-4 py-12">
+      <a href="/" class="inline-flex items-center gap-2 text-sm text-brand hover:text-brand-dark transition-colors mb-8">
+        ← Voltar
+      </a>
+
+      <div class="bg-white rounded-3xl border border-gray-200 p-8 md:p-12 shadow-sm">
+        <div class="flex items-center gap-4 mb-8">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand to-purple-600 flex items-center justify-center shadow-lg">
+            <span class="text-2xl">📖</span>
+          </div>
+          <div>
+            <h1 class="text-3xl font-display text-gray-800">Como Funciona o Meu Racha</h1>
+            <p class="text-sm text-gray-500">Aprenda a usar todas as funcionalidades em poucos minutos</p>
+          </div>
+        </div>
+
+        <div class="prose prose-gray max-w-none">
+          <p class="text-gray-600 leading-relaxed">
+            O <strong>Meu Racha</strong> é a ferramenta mais fácil pra montar times balanceados
+            pros seus rachas, peladas e eventos esportivos. Funciona direto no navegador,
+            sem cadastro, sem instalação. Veja como usar:
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">🎯 Passo a passo básico</h2>
+
+          <div class="bg-orange-50 rounded-2xl border border-orange-200 p-6 mb-6">
+            <h3 class="text-lg font-display text-gray-800 mb-2">1. Adicione os participantes</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Digite os nomes das pessoas — um por linha ou separados por vírgula.
+              Você também pode colar uma lista de uma só vez. Conforme adiciona,
+              aparecem "chips" coloridos com os nomes.
+            </p>
+          </div>
+
+          <div class="bg-orange-50 rounded-2xl border border-orange-200 p-6 mb-6">
+            <h3 class="text-lg font-display text-gray-800 mb-2">2. Configure os times</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Escolha o <strong>tamanho do time</strong> (quantas pessoas por equipe).
+              O Meu Racha já calcula quantos times serão formados automaticamente.
+            </p>
+          </div>
+
+          <div class="bg-orange-50 rounded-2xl border border-orange-200 p-6 mb-6">
+            <h3 class="text-lg font-display text-gray-800 mb-2">3. SORTEAR!</h3>
+            <p class="text-gray-600 leading-relaxed">
+              Clique no botão <strong>SORTEAR!</strong> e veja a mágica acontecer.
+              Os times são distribuídos aleatoriamente com uma animação divertida.
+              Pronto! É só chamar a galera pra jogar.
+            </p>
+          </div>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">⚙️ Funcionalidades avançadas</h2>
+
+          <h3 class="text-lg font-display text-gray-800 mt-6 mb-2">Regras personalizadas</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Você pode criar regras pra distribuir tipos específicos de jogadores pelos times.
+            Por exemplo: "no máximo 2 iniciantes por time" ou "pelo menos 1 mulher por time".
+            Basta adicionar uma regra, escolher a tag e definir a quantidade por equipe.
+          </p>
+
+          <h3 class="text-lg font-display text-gray-800 mt-6 mb-2">Tags nos jogadores</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Marque cada jogador com tags como ⭐ iniciante, ⭐⭐ médio, ⭐⭐⭐ craque,
+            ou use tags personalizadas como "goleiro", "atacante", "mulher", "homem".
+            O sorteio respeita essas marcações pra distribuir equilibradamente.
+          </p>
+
+          <h3 class="text-lg font-display text-gray-800 mt-6 mb-2">Pares bloqueados</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Impede que duas pessoas específicas fiquem no mesmo time — ou força que fiquem juntas.
+            Útil pra separar aquela dupla imbatível ou garantir que um craque não monopolize o time.
+          </p>
+
+          <h3 class="text-lg font-display text-gray-800 mt-6 mb-2">Capitão automático</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Define um ou mais capitães pra cada time. Você escolhe a tag que identifica os capitães
+            (ex: "capitão") e o sorteio distribui um capitão por equipe.
+          </p>
+
+          <h3 class="text-lg font-display text-gray-800 mt-6 mb-2">Templates de esporte</h3>
+          <p class="text-gray-600 leading-relaxed">
+            Escolha entre ⚽ Futebol, 🏐 Vôlei, 🏀 Basquete ou 🏓 Tênis de Mesa.
+            Cada template já configura o tamanho ideal de time pro esporte escolhido.
+          </p>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">🎮 Modo Partida</h2>
+          <p class="text-gray-600 leading-relaxed">
+            Depois do sorteio, você pode ativar o <strong>Modo Partida</strong> pra acompanhar
+            o jogo em tempo real:
+          </p>
+          <ul class="list-disc pl-6 text-gray-600 space-y-1">
+            <li><strong>Placar ao vivo</strong> — marque pontos, veja quem está ganhando</li>
+            <li><strong>Cronômetro integrado</strong> — controle o tempo de cada partida</li>
+            <li><strong>Sistema de sets</strong> — configure quantidade de sets pra vencer</li>
+            <li><strong>Rodízio automático</strong> — time que perde sai, próximo entra</li>
+            <li><strong>Histórico de pontos</strong> — veja como cada ponto foi marcado</li>
+          </ul>
+
+          <h2 class="text-xl font-display text-gray-800 mt-8 mb-4">📱 Dicas importantes</h2>
+          <ul class="list-disc pl-6 text-gray-600 space-y-1">
+            <li>Adicione <strong>pelo menos 4 pessoas</strong> pra poder sortear</li>
+            <li>Use o botão <strong>Importar</strong> pra colar listas grandes</li>
+            <li>Os resultados ficam salvos no seu navegador — <strong>não use modo anônimo</strong></li>
+            <li>Não precisa de cadastro, e-mail nem senha — é 100% gratuito</li>
+          </ul>
+
+          <p class="text-gray-600 leading-relaxed mt-8 pt-6 border-t border-gray-100">
+            Pronto pra começar? <a href="/" class="text-brand hover:text-brand-dark font-semibold transition-colors">Volte pra página inicial e crie seu primeiro racha!</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="h-4"></div>
+    </div>
+  </main>
+</Layout>
